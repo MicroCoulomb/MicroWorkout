@@ -8,10 +8,14 @@ import { accounts, authSessions, invitations, userProfiles, users, verifications
 
 const ownerEmail = process.env.OWNER_EMAIL?.trim().toLowerCase();
 
+// Normalize BETTER_AUTH_URL: if the value is a bare hostname, prepend https://
+const rawBetterAuthURL = process.env.BETTER_AUTH_URL?.trim();
+const betterAuthURL = rawBetterAuthURL && !/^https?:\/\//i.test(rawBetterAuthURL) ? `https://${rawBetterAuthURL}` : rawBetterAuthURL;
+
 export const auth = betterAuth({
   appName: "MicroWorkout",
   secret: process.env.BETTER_AUTH_SECRET,
-  baseURL: process.env.BETTER_AUTH_URL,
+  baseURL: betterAuthURL,
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: { users, sessions: authSessions, accounts, verifications },
