@@ -17,6 +17,13 @@ export const metadata: Metadata = {
   title: "MicroWorkout",
   description: "Plan less. Move more. Track every set.",
   applicationName: "MicroWorkout",
+  icons: {
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/icon.png", type: "image/png" }],
+  },
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "MicroWorkout" },
 };
 
