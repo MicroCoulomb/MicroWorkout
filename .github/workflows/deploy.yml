@@ -16,13 +16,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: production
-    env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
-      BETTER_AUTH_URL: ${{ secrets.BETTER_AUTH_URL }}
-      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-      OWNER_EMAIL: ${{ secrets.OWNER_EMAIL }}
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -35,5 +28,5 @@ jobs:
       - run: npm run test
       - run: npx vercel@latest pull --yes --environment=production --scope=rbpalmiano-5714s-projects --project=micro-workout --token=${{ secrets.VERCEL_TOKEN }}
       - run: npx vercel@latest build --prod --scope=rbpalmiano-5714s-projects --project=micro-workout --token=${{ secrets.VERCEL_TOKEN }}
-      - run: npm run db:migrate
+      - run: npx vercel@latest env run --environment=production --scope=rbpalmiano-5714s-projects --project=micro-workout --token=${{ secrets.VERCEL_TOKEN }} -- npm run db:migrate
       - run: npx vercel@latest deploy --prebuilt --prod --scope=rbpalmiano-5714s-projects --project=micro-workout --token=${{ secrets.VERCEL_TOKEN }}
