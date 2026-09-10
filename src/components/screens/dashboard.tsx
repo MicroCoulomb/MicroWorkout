@@ -15,6 +15,7 @@ export function Dashboard({ onNavigate, onResume }: { onNavigate(view: AppView):
   const weeklyGoal = profile?.weeklyGoal ?? 3;
   const lastSession = completed[0];
   const SyncIcon = syncStatus === "synced" ? Cloud : CloudOff;
+  const currentMonth = new Date().toLocaleDateString(undefined, { month: "long" });
 
   return (
     <>
@@ -22,7 +23,7 @@ export function Dashboard({ onNavigate, onResume }: { onNavigate(view: AppView):
         <div className="brand display"><span>Micro</span>Workout<Image className="brand-mark" src="/icon-orange.png" alt="" width={1536} height={1024} sizes="28px" /></div>
         <button className="sync-pill" onClick={() => void syncNow()}><SyncIcon size={14} /> {syncStatus === "local" ? "Local demo" : syncStatus === "synced" ? "Synced" : syncStatus === "syncing" ? "Syncing" : syncStatus === "offline" ? `${pendingChanges} pending` : syncStatus === "locked" ? "Sign in again" : "Retry sync"}</button>
       </header>
-      <div className="page-header dashboard-header"><h1 className="display">Dashboard</h1></div>
+      <div className="page-header dashboard-header"><h1 className="page-title">Dashboard</h1></div>
 
       {active && (
         <button className="resume-banner" onClick={onResume}>
@@ -34,7 +35,7 @@ export function Dashboard({ onNavigate, onResume }: { onNavigate(view: AppView):
 
       <section className="dashboard-layout">
         <article className="week-card card">
-          <div className="row-between"><div><span className="eyebrow">This week</span><h2 className="display section-title">Your activity</h2></div><strong>{thisWeekSessions.length}/{weeklyGoal}</strong></div>
+          <div className="row-between"><div><span className="eyebrow">Your activity</span><h2 className="display section-title">{currentMonth}</h2></div><strong>{thisWeekSessions.length}/{weeklyGoal}</strong></div>
           <div className="week-row">
             {week.map((day) => {
               const count = completed.filter((session) => session.endedAt && session.endedAt >= day.start && session.endedAt < day.end).length;

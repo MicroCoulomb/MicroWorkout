@@ -11,7 +11,7 @@ export function HistoryScreen() {
   const [open, setOpen] = useState<string>();
   const completed = store.sessions.filter((session) => session.status === "completed" || session.status === "completed_early");
   return <>
-    <header className="page-header"><div><span className="eyebrow">Permanent record</span><h1 className="display">Workout<br />history</h1></div></header>
+    <header className="page-header"><div><h1 className="page-title">Workout history</h1></div></header>
     {completed.length === 0 ? <div className="empty-state card"><CalendarX size={42} /><h2 className="display">Nothing logged yet.</h2><p>Complete a workout and its read-only report will appear here.</p></div>
       : <section className="history-list">{completed.map((session) => <HistoryItem key={session.id} session={session} open={open === session.id} onToggle={() => setOpen(open === session.id ? undefined : session.id)} />)}</section>}
   </>;

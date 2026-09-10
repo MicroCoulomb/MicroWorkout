@@ -20,7 +20,7 @@ export function PlansScreen({ onWorkoutStarted }: { onWorkoutStarted(id: string)
   return (
     <>
       <header className="page-header plans-header">
-        <div><span className="eyebrow">Build your rotation</span><h1 className="display">Workout plans</h1></div>
+        <div><h1 className="page-title">Workout plans</h1></div>
         <button className="button-primary" onClick={() => setEditing("new")}><Plus size={19} /> New plan</button>
       </header>
 

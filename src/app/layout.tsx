@@ -23,6 +23,7 @@ export const metadata: Metadata = {
       { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
     ],
     apple: [{ url: "/icon.png", type: "image/png" }],
+    other: [{ rel: "apple-touch-icon-precomposed", url: "/icon.png", type: "image/png" }],
   },
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "MicroWorkout" },
 };

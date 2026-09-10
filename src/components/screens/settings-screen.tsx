@@ -38,7 +38,7 @@ export function SettingsScreen({ isAdmin, canDeleteAccount, syncEnabled, onAdmin
   }
 
   return <>
-    <header className="page-header"><div><span className="eyebrow">Make it yours</span><h1 className="display">Settings</h1></div></header>
+    <header className="page-header"><div><h1 className="page-title">Settings</h1></div></header>
     <div className="settings-grid">
       <section className="settings-card card"><span className="eyebrow">Profile</span><h2 className="display">Training defaults</h2><div className="stack"><label className="field">Display name<input value={name} onChange={(event) => setName(event.target.value)} /></label><label className="field">Weekly workout goal<select value={goal} onChange={(event) => setGoal(Number(event.target.value))}>{Array.from({ length: 7 }, (_, index) => index + 1).map((value) => <option key={value} value={value}>{value} workout{value === 1 ? "" : "s"}</option>)}</select></label><label className="field">Weight unit<select value={unit} onChange={(event) => setUnit(event.target.value as WeightUnit)}><option value="kg">Kilograms</option><option value="lb">Pounds</option></select></label><button className="button-primary" onClick={() => void save()}>{saved ? "Saved" : "Save settings"}</button></div></section>
       <InstallAppCard />
