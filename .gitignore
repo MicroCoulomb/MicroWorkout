@@ -8,3 +8,6 @@ coverage/
 public/sw.js
 public/swe-worker-*.js
 tsconfig.tsbuildinfo
+
+.vercel
+.env*

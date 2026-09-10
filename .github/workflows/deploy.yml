@@ -23,8 +23,6 @@ jobs:
       GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
       GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
       OWNER_EMAIL: ${{ secrets.OWNER_EMAIL }}
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -35,7 +33,7 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run test
-      - run: npx vercel@latest pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-      - run: npx vercel@latest build --prod --token=${{ secrets.VERCEL_TOKEN }}
+      - run: npx vercel@latest pull --yes --environment=production --scope=rbpalmiano-5714s-projects --project=micro-workout --token=${{ secrets.VERCEL_TOKEN }}
+      - run: npx vercel@latest build --prod --scope=rbpalmiano-5714s-projects --project=micro-workout --token=${{ secrets.VERCEL_TOKEN }}
       - run: npm run db:migrate
-      - run: npx vercel@latest deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+      - run: npx vercel@latest deploy --prebuilt --prod --scope=rbpalmiano-5714s-projects --project=micro-workout --token=${{ secrets.VERCEL_TOKEN }}
