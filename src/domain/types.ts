@@ -9,6 +9,12 @@ export interface Exercise {
   equipment: Equipment;
   builtin: boolean;
   updatedAt: number;
+  retiredAt?: number;
+}
+
+export interface ExerciseAlias {
+  id: string;
+  canonicalId: string;
 }
 
 export interface WorkoutPlan {

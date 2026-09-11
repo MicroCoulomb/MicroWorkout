@@ -73,16 +73,23 @@ export const userProfiles = pgTable("user_profiles", {
 
 export const exercises = pgTable("exercises", {
   id: uuid("id").primaryKey(),
-  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
+  createdByUserId: text("created_by_user_id").references(() => users.id, { onDelete: "set null" }),
   slug: text("slug"),
   name: text("name").notNull(),
+  normalizedName: text("normalized_name").notNull(),
   muscleGroup: text("muscle_group").notNull(),
   equipment: text("equipment").notNull(),
   builtin: boolean("builtin").notNull().default(false),
   revision: integer("revision").notNull().default(1),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
+  retiredAt: timestamp("retired_at", { withTimezone: true }),
   ...timestamps,
-}, (table) => [index("exercises_owner_idx").on(table.userId), uniqueIndex("exercises_builtin_slug_unique").on(table.slug)]);
+}, (table) => [index("exercises_creator_idx").on(table.createdByUserId), uniqueIndex("exercises_builtin_slug_unique").on(table.slug), uniqueIndex("exercises_normalized_name_unique").on(table.normalizedName)]);
+
+export const exerciseAliases = pgTable("exercise_aliases", {
+  id: uuid("id").primaryKey(),
+  canonicalId: uuid("canonical_id").notNull().references(() => exercises.id, { onDelete: "cascade" }),
+});
 
 export const workoutPlans = pgTable("workout_plans", {
   id: uuid("id").primaryKey(),

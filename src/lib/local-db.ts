@@ -1,9 +1,10 @@
 import Dexie, { type EntityTable } from "dexie";
 import { BUILTIN_EXERCISES } from "@/domain/presets";
-import type { Exercise, OutboxMutation, SyncMeta, UserProfile, WorkoutPlan, WorkoutSession } from "@/domain/types";
+import type { Exercise, ExerciseAlias, OutboxMutation, SyncMeta, UserProfile, WorkoutPlan, WorkoutSession } from "@/domain/types";
 
 export class MicroWorkoutDatabase extends Dexie {
   exercises!: EntityTable<Exercise, "id">;
+  exerciseAliases!: EntityTable<ExerciseAlias, "id">;
   plans!: EntityTable<WorkoutPlan, "id">;
   sessions!: EntityTable<WorkoutSession, "id">;
   profiles!: EntityTable<UserProfile, "id">;
@@ -21,6 +22,15 @@ export class MicroWorkoutDatabase extends Dexie {
     });
     this.version(2).stores({
       exercises: "id, name, muscleGroup, equipment, builtin, updatedAt",
+      plans: "id, name, updatedAt",
+      sessions: "id, deviceId, status, startedAt, updatedAt",
+      profiles: "id",
+      outbox: "id, entityType, entityId, createdAt",
+      syncMeta: "id",
+    });
+    this.version(3).stores({
+      exercises: "id, name, muscleGroup, equipment, builtin, updatedAt, retiredAt",
+      exerciseAliases: "id, canonicalId",
       plans: "id, name, updatedAt",
       sessions: "id, deviceId, status, startedAt, updatedAt",
       profiles: "id",

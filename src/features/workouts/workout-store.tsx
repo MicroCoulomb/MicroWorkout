@@ -1,12 +1,19 @@
 "use client";
 
 import { useLiveQuery } from "dexie-react-hooks";
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { PRESET_PLANS } from "@/domain/presets";
 import { completeSessionEarly } from "@/domain/session-completion";
 import type { Exercise, UserProfile, WeightUnit, WorkoutPlan, WorkoutSession } from "@/domain/types";
 import { deviceId, initializeLocalData, MicroWorkoutDatabase, queueMutation } from "@/lib/local-db";
 import { SyncRejectedError, synchronizeLocalData } from "@/lib/sync-client";
+
+export type SyncStatus = "local" | "synced" | "syncing" | "offline" | "error" | "locked";
+
+export interface SyncResult {
+  status: SyncStatus;
+  pendingChanges: number;
+}
 
 interface StoreValue {
   ready: boolean;
@@ -16,8 +23,8 @@ interface StoreValue {
   profile?: UserProfile;
   pendingChanges: number;
   currentDeviceId: string;
-  syncStatus: "local" | "synced" | "syncing" | "offline" | "error" | "locked";
-  syncNow(): Promise<void>;
+  syncStatus: SyncStatus;
+  syncNow(): Promise<SyncResult>;
   savePlan(plan: Pick<WorkoutPlan, "id" | "name" | "restSeconds" | "exerciseIds">): Promise<void>;
   copyPreset(index: number): Promise<string>;
   duplicatePlan(plan: WorkoutPlan): Promise<void>;
@@ -42,6 +49,7 @@ export function WorkoutStoreProvider({ children, userId, userName, syncEnabled, 
   const profile = useLiveQuery(() => localDb.profiles.get("profile"), [localDb]);
   const pendingChanges = useLiveQuery(() => localDb.outbox.count(), [localDb]) ?? 0;
   const [syncStatus, setSyncStatus] = useState<StoreValue["syncStatus"]>(syncEnabled ? "syncing" : "local");
+  const activeSync = useRef<Promise<SyncResult> | undefined>(undefined);
 
   useEffect(() => {
     void initializeLocalData(localDb, userName, initialProfile);
@@ -54,16 +62,38 @@ export function WorkoutStoreProvider({ children, userId, userName, syncEnabled, 
     });
   }, [localDb]);
 
-  const syncNow = useCallback(async () => {
-    if (!syncEnabled) return;
-    if (!navigator.onLine) { setSyncStatus("offline"); return; }
-    setSyncStatus("syncing");
-    try { await synchronizeLocalData(localDb); setSyncStatus("synced"); }
-    catch (error) {
-      if (error instanceof SyncRejectedError) { await clearDatabase(); setSyncStatus("locked"); }
-      else setSyncStatus("error");
+  const performSync = useCallback(async (): Promise<SyncResult> => {
+    if (!syncEnabled) return { status: "local", pendingChanges: await localDb.outbox.count() };
+    if (!navigator.onLine) {
+      const result = { status: "offline" as const, pendingChanges: await localDb.outbox.count() };
+      setSyncStatus(result.status);
+      return result;
     }
-  }, [clearDatabase, localDb, syncEnabled]);
+    setSyncStatus("syncing");
+    try {
+      await synchronizeLocalData(localDb);
+      const result = { status: "synced" as const, pendingChanges: await localDb.outbox.count() };
+      setSyncStatus(result.status);
+      return result;
+    }
+    catch (error) {
+      const status = error instanceof SyncRejectedError ? "locked" as const : "error" as const;
+      const result = { status, pendingChanges: await localDb.outbox.count() };
+      setSyncStatus(status);
+      return result;
+    }
+  }, [localDb, syncEnabled]);
+
+  const syncNow = useCallback(() => {
+    if (activeSync.current) return activeSync.current;
+    const operation = performSync();
+    activeSync.current = operation;
+    void operation.then(
+      () => { if (activeSync.current === operation) activeSync.current = undefined; },
+      () => { if (activeSync.current === operation) activeSync.current = undefined; },
+    );
+    return operation;
+  }, [performSync]);
 
   useEffect(() => {
     if (!syncEnabled) return;
@@ -82,7 +112,9 @@ export function WorkoutStoreProvider({ children, userId, userName, syncEnabled, 
   }, [pendingChanges, syncEnabled, syncNow, syncStatus]);
 
   async function savePlan(input: Pick<WorkoutPlan, "id" | "name" | "restSeconds" | "exerciseIds">) {
-    const plan = { ...input, name: input.name.trim(), updatedAt: Date.now() };
+    const aliases = await localDb.exerciseAliases.bulkGet(input.exerciseIds);
+    const canonicalIds = input.exerciseIds.map((id, index) => aliases[index]?.canonicalId ?? id);
+    const plan = { ...input, exerciseIds: canonicalIds, name: input.name.trim(), updatedAt: Date.now() };
     await localDb.transaction("rw", localDb.plans, localDb.outbox, async () => {
       await localDb.plans.put(plan);
       await queueMutation(localDb, { entityType: "plan", entityId: plan.id, operation: "upsert", payload: plan });

@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, Pause, Pencil, Play, Plus, RotateCcw, Trash2, X } from "lucide-react";
+import { ChevronLeft, Cloud, CloudOff, Pause, Pencil, Play, Plus, RotateCcw, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { elapsedWorkoutMs, formatDuration, lbToKg, sessionTotals } from "@/domain/metrics";
@@ -155,10 +155,12 @@ export function WorkoutScreen({ session, onClose }: { session: WorkoutSession; o
 }
 
 function WorkoutSummary({ session, onClose }: { session: WorkoutSession; onClose(): void }) {
-  const { profile } = useWorkoutStore();
+  const { profile, pendingChanges, syncStatus } = useWorkoutStore();
   const totals = useMemo(() => sessionTotals(session), [session]);
   const unit = profile?.weightUnit ?? "kg";
-  return <main className="summary-shell"><span className="eyebrow">Workout saved</span><h1 className="display">{session.planName} complete.</h1><div className="summary-grid"><Metric label="Total" value={formatDuration(totals.workoutMs)} /><Metric label="Active" value={formatDuration(totals.activeMs)} /><Metric label="Rest" value={formatDuration(totals.restMs)} /></div><div className="summary-exercises card">{session.exercises.map((exercise) => <div className="summary-row" key={exercise.id}><div><strong>{exercise.name}</strong><span>{exercise.status}</span></div><p>{exercise.sets.length ? exercise.sets.map((set) => formatSet(set, unit)).join(" / ") : "No sets"}</p></div>)}</div><button className="button-primary summary-done" onClick={onClose}>Back to dashboard</button></main>;
+  const isSynced = syncStatus === "synced" && pendingChanges === 0;
+  const saveLabel = syncStatus === "local" ? "Saved on this device" : isSynced ? "Synced" : "Saved locally";
+  return <main className="summary-shell"><span className={`summary-save-status ${isSynced ? "is-synced" : ""}`} aria-live="polite">{isSynced ? <Cloud size={15} /> : <CloudOff size={15} />}{saveLabel}</span><h1 className="display">{session.planName} complete.</h1><div className="summary-grid"><Metric label="Total" value={formatDuration(totals.workoutMs)} /><Metric label="Active" value={formatDuration(totals.activeMs)} /><Metric label="Rest" value={formatDuration(totals.restMs)} /></div><div className="summary-exercises card">{session.exercises.map((exercise) => <div className="summary-row" key={exercise.id}><div><strong>{exercise.name}</strong><span>{exercise.status}</span></div><p>{exercise.sets.length ? exercise.sets.map((set) => formatSet(set, unit)).join(" / ") : "No sets"}</p></div>)}</div><button className="button-primary summary-done" onClick={onClose}>Back to dashboard</button></main>;
 }
 
 function SetEditorDialog({ set, onClose, onSave }: { set: SetLog; onClose(): void; onSave(reps: string): void }) {

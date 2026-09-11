@@ -102,6 +102,15 @@ describe("PlansScreen card controls", () => {
     expect(screen.queryByRole("heading", { name: "New plan" })).toBeNull();
   });
 
+  it("suppresses the browser context menu on the long-press launcher", () => {
+    render(<PlansScreen />);
+
+    const event = new MouseEvent("contextmenu", { bubbles: true, cancelable: true });
+    screen.getByRole("button", { name: "Create new workout plan" }).dispatchEvent(event);
+
+    expect(event.defaultPrevented).toBe(true);
+  });
+
   it("blocks duplicate custom exercises and adds a saved custom exercise to the open plan", async () => {
     render(<PlansScreen />);
 

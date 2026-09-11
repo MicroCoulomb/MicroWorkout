@@ -139,6 +139,7 @@ export function PlansScreen() {
         onPointerUp={cancelLongPress}
         onPointerLeave={cancelLongPress}
         onPointerCancel={cancelLongPress}
+        onContextMenu={(event) => event.preventDefault()}
         onClick={() => {
           if (longPressTriggered.current) {
             longPressTriggered.current = false;
@@ -162,8 +163,9 @@ function PlanEditor({ plan, onClose, onCreateCustomExercise }: { plan?: WorkoutP
   const [query, setQuery] = useState("");
   const visibleExercises = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase();
-    if (!normalizedQuery) return store.exercises;
-    return store.exercises.filter((exercise) => [exercise.name, exercise.muscleGroup, exercise.equipment].some((value) => value.toLocaleLowerCase().includes(normalizedQuery)));
+    const activeExercises = store.exercises.filter((exercise) => !exercise.retiredAt);
+    if (!normalizedQuery) return activeExercises;
+    return activeExercises.filter((exercise) => [exercise.name, exercise.muscleGroup, exercise.equipment].some((value) => value.toLocaleLowerCase().includes(normalizedQuery)));
   }, [query, store.exercises]);
 
   function move(index: number, direction: -1 | 1) {

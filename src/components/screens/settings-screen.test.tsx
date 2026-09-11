@@ -7,7 +7,7 @@ import { SettingsScreen } from "./settings-screen";
 const mocks = vi.hoisted(() => ({
   clearLocalData: vi.fn(async () => undefined),
   signOut: vi.fn(async () => undefined),
-  syncNow: vi.fn(async () => undefined),
+  syncNow: vi.fn(),
   refresh: vi.fn(),
 }));
 
@@ -18,6 +18,7 @@ vi.mock("@/features/workouts/workout-store", () => ({
     updateProfile: vi.fn(async () => undefined),
     clearLocalData: mocks.clearLocalData,
     syncNow: mocks.syncNow,
+    syncStatus: "synced",
   }),
 }));
 
@@ -30,6 +31,7 @@ describe("SettingsScreen account controls", () => {
     mocks.clearLocalData.mockClear();
     mocks.signOut.mockClear();
     mocks.syncNow.mockClear();
+    mocks.syncNow.mockResolvedValue({ status: "synced", pendingChanges: 0 });
     mocks.refresh.mockClear();
   });
 
@@ -53,5 +55,16 @@ describe("SettingsScreen account controls", () => {
 
     await waitFor(() => expect(mocks.clearLocalData).toHaveBeenCalledOnce());
     expect(mocks.signOut).toHaveBeenCalledOnce();
+  });
+
+  it("blocks sign out when local changes could not be synchronized", async () => {
+    mocks.syncNow.mockResolvedValueOnce({ status: "error", pendingChanges: 1 });
+    render(<SettingsScreen isAdmin={false} canDeleteAccount syncEnabled onAdmin={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Sign out" }));
+
+    expect((await screen.findByRole("alert")).textContent).toContain("1 local change could not sync");
+    expect(mocks.signOut).not.toHaveBeenCalled();
+    expect(mocks.clearLocalData).not.toHaveBeenCalled();
   });
 });

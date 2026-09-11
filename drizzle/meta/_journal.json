@@ -15,6 +15,13 @@
       "when": 1789147154978,
       "tag": "0001_awesome_hex",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789147154979,
+      "tag": "0002_shared_exercise_pool",
+      "breakpoints": true
     }
   ]
 }
