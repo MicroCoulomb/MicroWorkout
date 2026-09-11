@@ -18,6 +18,6 @@ ALTER TABLE "exercises" DROP CONSTRAINT "exercises_user_id_users_id_fk";--> stat
 ALTER TABLE "exercises" DROP COLUMN "user_id";--> statement-breakpoint
 ALTER TABLE "exercises" ADD CONSTRAINT "exercises_created_by_user_id_users_id_fk" FOREIGN KEY ("created_by_user_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "exercise_aliases" ADD CONSTRAINT "exercise_aliases_canonical_id_exercises_id_fk" FOREIGN KEY ("canonical_id") REFERENCES "public"."exercises"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-DROP INDEX "exercises_owner_idx";--> statement-breakpoint
+DROP INDEX IF EXISTS "exercises_owner_idx";--> statement-breakpoint
 CREATE INDEX "exercises_creator_idx" ON "exercises" USING btree ("created_by_user_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "exercises_normalized_name_unique" ON "exercises" USING btree ("normalized_name");
