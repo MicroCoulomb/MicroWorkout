@@ -1,21 +1,17 @@
 "use client";
 
-import { ArrowDown, ArrowUp, Copy, MoreHorizontal, Play, Plus, Search, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Copy, MoreHorizontal, Plus, Search, Trash2, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { PRESET_PLANS } from "@/domain/presets";
 import type { Equipment, MuscleGroup, WorkoutPlan } from "@/domain/types";
 import { useWorkoutStore } from "@/features/workouts/workout-store";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
-export function PlansScreen({ onWorkoutStarted }: { onWorkoutStarted(id: string): void }) {
+export function PlansScreen() {
   const store = useWorkoutStore();
   const [editing, setEditing] = useState<WorkoutPlan | "new">();
   const [menu, setMenu] = useState<string>();
   const [planToDelete, setPlanToDelete] = useState<WorkoutPlan>();
-
-  async function start(plan: WorkoutPlan) {
-    onWorkoutStarted(await store.startWorkout(plan));
-  }
 
   return (
     <>
@@ -36,7 +32,6 @@ export function PlansScreen({ onWorkoutStarted }: { onWorkoutStarted(id: string)
           <span className="eyebrow">{plan.exerciseIds.length} exercises · {plan.restSeconds}s rest</span>
           <h2 className="display">{plan.name}</h2>
           <p>{plan.exerciseIds.slice(0, 3).map((id) => store.exercises.find((exercise) => exercise.id === id)?.name).filter(Boolean).join(" · ")}{plan.exerciseIds.length > 3 ? "…" : ""}</p>
-          <button className="button-primary plan-start" onClick={() => void start(plan)}><Play size={18} fill="currentColor" /> Start</button>
         </article>)}
       </section>}
 

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { ArrowRight, Cloud, CloudOff, Flame, Play, RotateCcw, TimerReset, Users } from "lucide-react";
+import { ArrowRight, Cloud, CloudOff, Flame, RotateCcw, TimerReset, Users } from "lucide-react";
 import { formatDuration, sessionTotals } from "@/domain/metrics";
 import type { AppView } from "../micro-workout-app";
 import { useWorkoutStore } from "@/features/workouts/workout-store";
@@ -65,8 +65,6 @@ export function Dashboard({ onNavigate, onResume }: { onNavigate(view: AppView):
           {lastSession ? <LastSession session={lastSession} /> : <div className="empty-mini"><TimerReset /><p>Your first completed workout will land here.</p></div>}
         </article>
       </section>
-
-      <button className="dashboard-start" onClick={() => onNavigate("plans")} aria-label="Start workout"><Play fill="currentColor" /><span className="sr-only">Start workout</span></button>
     </>
   );
 }
