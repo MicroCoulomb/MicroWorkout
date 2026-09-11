@@ -13,7 +13,27 @@ export function PlansScreen() {
   const [menu, setMenu] = useState<string>();
   const [openPlanId, setOpenPlanId] = useState<string>();
   const [planToDelete, setPlanToDelete] = useState<WorkoutPlan>();
+  const [customExerciseOpen, setCustomExerciseOpen] = useState(false);
   const cardRefs = useRef(new Map<string, HTMLElement>());
+  const customExerciseReceiver = useRef<((id: string) => void) | undefined>(undefined);
+  const longPressTimer = useRef<number | undefined>(undefined);
+  const longPressTriggered = useRef(false);
+
+  function openCustomExercise(onSaved?: (id: string) => void) {
+    customExerciseReceiver.current = onSaved;
+    setCustomExerciseOpen(true);
+  }
+
+  function closeCustomExercise() {
+    customExerciseReceiver.current = undefined;
+    setCustomExerciseOpen(false);
+  }
+
+  function cancelLongPress() {
+    if (longPressTimer.current === undefined) return;
+    window.clearTimeout(longPressTimer.current);
+    longPressTimer.current = undefined;
+  }
 
   useEffect(() => {
     function dismiss(event: MouseEvent) {
@@ -35,6 +55,8 @@ export function PlansScreen() {
       document.removeEventListener("keydown", closeOnEscape);
     };
   }, []);
+
+  useEffect(() => () => cancelLongPress(), []);
 
   return (
     <>
@@ -100,21 +122,49 @@ export function PlansScreen() {
           </article>)}
         </div>
       </section>
-      <button className="plan-create-launcher" onClick={() => setEditing("new")} aria-label="Create new workout plan"><Plus size={26} /></button>
-      {editing && <PlanEditor plan={editing === "new" ? undefined : editing} onClose={() => setEditing(undefined)} />}
+      <button
+        className="plan-create-launcher"
+        aria-label="Create new workout plan"
+        title="Hold to create a custom exercise"
+        onPointerDown={(event) => {
+          if (event.pointerType === "mouse" && event.button !== 0) return;
+          longPressTriggered.current = false;
+          cancelLongPress();
+          longPressTimer.current = window.setTimeout(() => {
+            longPressTriggered.current = true;
+            longPressTimer.current = undefined;
+            openCustomExercise();
+          }, 600);
+        }}
+        onPointerUp={cancelLongPress}
+        onPointerLeave={cancelLongPress}
+        onPointerCancel={cancelLongPress}
+        onClick={() => {
+          if (longPressTriggered.current) {
+            longPressTriggered.current = false;
+            return;
+          }
+          setEditing("new");
+        }}
+      ><Plus size={26} /></button>
+      {editing && <PlanEditor plan={editing === "new" ? undefined : editing} onClose={() => setEditing(undefined)} onCreateCustomExercise={openCustomExercise} />}
+      {customExerciseOpen && <CustomExerciseDialog onClose={closeCustomExercise} onSaved={(id) => customExerciseReceiver.current?.(id)} />}
       {planToDelete && <ConfirmDialog title="Delete plan?" message={`“${planToDelete.name}” will be removed from your account on every device. Past workout sessions will remain in History.`} confirmLabel="Delete plan" tone="danger" onClose={() => setPlanToDelete(undefined)} onConfirm={() => store.deletePlan(planToDelete.id)} />}
     </>
   );
 }
 
-function PlanEditor({ plan, onClose }: { plan?: WorkoutPlan; onClose(): void }) {
+function PlanEditor({ plan, onClose, onCreateCustomExercise }: { plan?: WorkoutPlan; onClose(): void; onCreateCustomExercise(onSaved: (id: string) => void): void }) {
   const store = useWorkoutStore();
   const [name, setName] = useState(plan?.name ?? "");
   const [restSeconds, setRestSeconds] = useState(plan?.restSeconds ?? 60);
   const [exerciseIds, setExerciseIds] = useState(plan?.exerciseIds ?? []);
   const [query, setQuery] = useState("");
-  const [customOpen, setCustomOpen] = useState(false);
-  const visibleExercises = useMemo(() => store.exercises.filter((exercise) => exercise.name.toLowerCase().includes(query.toLowerCase())), [query, store.exercises]);
+  const visibleExercises = useMemo(() => {
+    const normalizedQuery = query.trim().toLocaleLowerCase();
+    if (!normalizedQuery) return store.exercises;
+    return store.exercises.filter((exercise) => [exercise.name, exercise.muscleGroup, exercise.equipment].some((value) => value.toLocaleLowerCase().includes(normalizedQuery)));
+  }, [query, store.exercises]);
 
   function move(index: number, direction: -1 | 1) {
     const next = [...exerciseIds];
@@ -149,21 +199,45 @@ function PlanEditor({ plan, onClose }: { plan?: WorkoutPlan; onClose(): void }) 
       <div className="exercise-picker">
         <label className="search-field"><Search size={18} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search exercises" aria-label="Search exercises" /></label>
         <div className="exercise-options">{visibleExercises.map((exercise) => <button key={exercise.id} onClick={() => setExerciseIds([...exerciseIds, exercise.id])}><span><strong>{exercise.name}</strong><small>{exercise.muscleGroup} · {exercise.equipment}</small></span><Plus size={18} /></button>)}</div>
-        {customOpen ? <CustomExerciseForm onAdded={(id) => { setExerciseIds([...exerciseIds, id]); setCustomOpen(false); }} /> : <button className="button-secondary full-button" onClick={() => setCustomOpen(true)}><Plus size={17} /> Create custom exercise</button>}
+        <button className="button-secondary full-button" onClick={() => onCreateCustomExercise((id) => setExerciseIds((current) => [...current, id]))}><Plus size={17} /> Create custom exercise</button>
       </div>
       <div className="dialog-actions"><button className="button-secondary" onClick={onClose}>Cancel</button><button className="button-primary" disabled={!name.trim() || exerciseIds.length === 0} onClick={() => void save()}>Save plan</button></div>
     </div>
   </div>;
 }
 
-function CustomExerciseForm({ onAdded }: { onAdded(id: string): void }) {
+function CustomExerciseDialog({ onClose, onSaved }: { onClose(): void; onSaved(id: string): void }) {
   const store = useWorkoutStore();
   const [name, setName] = useState("");
   const [muscleGroup, setMuscleGroup] = useState<MuscleGroup>("Chest");
   const [equipment, setEquipment] = useState<Equipment>("Bodyweight");
-  async function submit() {
-    if (!name.trim()) return;
-    onAdded(await store.addExercise({ name, muscleGroup, equipment }));
+  const [error, setError] = useState("");
+
+  async function save() {
+    const normalizedName = titleCaseExerciseName(name);
+    if (!normalizedName) return;
+    if (store.exercises.some((exercise) => exercise.name.trim().toLocaleLowerCase() === normalizedName.toLocaleLowerCase())) {
+      setError(`“${normalizedName}” is already in your exercise library.`);
+      return;
+    }
+    const id = await store.addExercise({ name: normalizedName, muscleGroup, equipment });
+    onSaved(id);
+    onClose();
   }
-  return <div className="custom-form raised"><label className="field">Exercise name<input value={name} onChange={(event) => setName(event.target.value)} /></label><div className="editor-fields"><label className="field">Muscle group<select value={muscleGroup} onChange={(event) => setMuscleGroup(event.target.value as MuscleGroup)}>{["Chest", "Back", "Shoulders", "Arms", "Legs", "Glutes"].map((value) => <option key={value}>{value}</option>)}</select></label><label className="field">Equipment<select value={equipment} onChange={(event) => setEquipment(event.target.value as Equipment)}><option>Bodyweight</option><option>Dumbbells</option></select></label></div><button className="button-primary" disabled={!name.trim()} onClick={() => void submit()}>Add exercise</button></div>;
+  return <div className="dialog-backdrop custom-exercise-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+    <div className="dialog custom-exercise-dialog" role="dialog" aria-modal="true" aria-labelledby="custom-exercise-title">
+      <div className="row-between"><div><span className="eyebrow">Exercise library</span><h2 id="custom-exercise-title" className="display">New custom exercise</h2></div><button className="icon-button" onClick={onClose} aria-label="Close"><X /></button></div>
+      <div className="editor-fields">
+        <label className="field">Exercise name<input value={name} onChange={(event) => { setName(event.target.value); setError(""); }} placeholder="Single-arm press" autoFocus /></label>
+        <label className="field">Muscle group<select value={muscleGroup} onChange={(event) => setMuscleGroup(event.target.value as MuscleGroup)}>{["Chest", "Back", "Shoulders", "Arms", "Legs", "Glutes"].map((value) => <option key={value}>{value}</option>)}</select></label>
+        <label className="field">Equipment<select value={equipment} onChange={(event) => setEquipment(event.target.value as Equipment)}><option>Bodyweight</option><option>Dumbbells</option></select></label>
+      </div>
+      {error && <p className="custom-exercise-error" role="alert">{error}</p>}
+      <div className="dialog-actions"><button className="button-secondary" onClick={onClose}>Cancel</button><button className="button-primary" disabled={!name.trim()} onClick={() => void save()}>Save exercise</button></div>
+    </div>
+  </div>;
+}
+
+function titleCaseExerciseName(value: string) {
+  return value.trim().replace(/\s+/g, " ").split(" ").map((word) => word.split("-").map((part) => part ? part[0].toLocaleUpperCase() + part.slice(1).toLocaleLowerCase() : part).join("-")).join(" ");
 }

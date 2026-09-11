@@ -165,7 +165,7 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 .plan-card h2 { margin: 12px 96px 0 0; font-size: 2rem; line-height: .9; }
 .plan-card-controls { position: absolute; top: 12px; right: 12px; display: flex; gap: 6px; }
 .plan-view, .plan-menu { width: 38px; height: 38px; display: grid; place-items: center; border: 1px solid #39393e; border-radius: 12px; color: var(--muted); background: #29292d; cursor: pointer; transition: color .16s ease, border-color .16s ease, background .16s ease; }
-.plan-view:hover, .plan-menu:hover { color: var(--paper); border-color: #49494f; background: #303034; }
+.plan-view:hover, .plan-menu:hover { color: var(--muted); border-color: #49494f; background: #303034; }
 .plan-view[aria-expanded="true"], .plan-menu[aria-expanded="true"] { color: var(--orange-bright); border-color: rgba(255,122,47,.58); background: #303034; }
 .plan-exercise-list { display: grid; gap: 0; margin: 14px 0 0; padding: 0; list-style: none; }
 .plan-exercise-list li { min-height: 34px; display: grid; grid-template-columns: 30px 1fr; align-items: center; gap: 8px; border-top: 1px solid rgba(58,58,62,.75); font-size: .8rem; }
@@ -199,7 +199,11 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 .exercise-options button { min-height: 50px; padding: 7px 12px; display: flex; align-items: center; justify-content: space-between; border: 0; border-radius: 13px; background: #242428; cursor: pointer; text-align: left; }
 .exercise-options button span, .exercise-options button small { display: block; }
 .exercise-options small { margin-top: 2px; color: var(--muted); }
-.custom-form { padding: 16px; border-radius: 18px; }
+.custom-exercise-backdrop { z-index: 50; }
+.custom-exercise-dialog { width: min(100%, 500px); }
+.custom-exercise-dialog .editor-fields { grid-template-columns: 1fr 1fr; }
+.custom-exercise-dialog .field:first-child { grid-column: 1/-1; }
+.custom-exercise-error { margin: -8px 0 0; color: #ff8b7e; font-size: .82rem; line-height: 1.45; }
 .full-button { width: 100%; }
 .dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
 
@@ -356,6 +360,8 @@ button:disabled { cursor: not-allowed; opacity: .45; }
   .plan-card { min-height: 0; }
   .section-heading { align-items: start; flex-direction: column; }
   .editor-fields { grid-template-columns: 1fr; }
+  .custom-exercise-dialog .editor-fields { grid-template-columns: 1fr; }
+  .custom-exercise-dialog .field:first-child { grid-column: auto; }
   * { scrollbar-width: none; }
   *::-webkit-scrollbar { width: 0; height: 0; display: none; }
   .dialog-backdrop { padding: 0; align-items: end; }
