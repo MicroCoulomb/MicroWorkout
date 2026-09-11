@@ -76,15 +76,14 @@ export function WorkoutStartScreen({ plan, onBack, onStart }: { plan: WorkoutPla
     <header className="workout-top">
       <button className="icon-button" onClick={onBack} aria-label="Back to workout selection"><ChevronLeft /></button>
       <div><span>{plan.name}</span><b className="display">00:00</b></div>
-      <span className="icon-button prestart-pause" aria-hidden="true"><Pause fill="currentColor" /></span>
+      <button className="icon-button prestart-pause" disabled aria-label="Workout has not started"><Pause fill="currentColor" /></button>
     </header>
     <section className="exercise-stage prestart-stage">
       <div className="progress-track"><span style={{ width: "0%" }} /></div>
       <div className="exercise-counter display">00<small>/{String(exerciseNames.length).padStart(2, "0")}</small></div>
       <span className="eyebrow">First up</span>
       <h1 className="display">{exerciseNames[0] ?? "Start workout"}</h1>
-      <p className="muted">Your timer starts when you press play.</p>
-      <button className="prestart-button" disabled={starting} onClick={() => void start()}><Play size={26} fill="currentColor" /><strong className="display">{starting ? "Starting" : "Start workout"}</strong></button>
+      <button className="prestart-button" disabled={starting} onClick={() => void start()} aria-label="Start workout"><Play size={58} fill="currentColor" /></button>
     </section>
     <section className="live-log prestart-details">
       <span className="eyebrow">Workout details</span>

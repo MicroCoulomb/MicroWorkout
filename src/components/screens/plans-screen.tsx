@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDown, ArrowUp, Copy, MoreHorizontal, Plus, Search, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Copy, MoreHorizontal, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { PRESET_PLANS } from "@/domain/presets";
 import type { Equipment, MuscleGroup, WorkoutPlan } from "@/domain/types";
@@ -21,11 +21,10 @@ export function PlansScreen() {
       </header>
 
       {store.plans.length > 0 && <section className="plan-grid" aria-label="Your workout plans">
-        {store.plans.map((plan, index) => <article className="plan-card card" key={plan.id}>
-          <div className="plan-index display">{String(index + 1).padStart(2, "0")}</div>
+        {store.plans.map((plan) => <article className="plan-card card" key={plan.id}>
           <button className="plan-menu" onClick={() => setMenu(menu === plan.id ? undefined : plan.id)} aria-label={`Actions for ${plan.name}`}><MoreHorizontal /></button>
           {menu === plan.id && <div className="popover">
-            <button onClick={() => { setEditing(plan); setMenu(undefined); }}>Edit plan</button>
+            <button onClick={() => { setEditing(plan); setMenu(undefined); }}><Pencil size={15} /> Edit</button>
             <button onClick={() => { void store.duplicatePlan(plan); setMenu(undefined); }}><Copy size={15} /> Duplicate</button>
             <button className="danger-text" onClick={() => { setPlanToDelete(plan); setMenu(undefined); }}><Trash2 size={15} /> Delete</button>
           </div>}
@@ -36,12 +35,12 @@ export function PlansScreen() {
       </section>}
 
       <section className="preset-section">
-        <div className="section-heading"><div><span className="eyebrow">Ready-made</span><h2 className="display section-title">Starter plans</h2></div><p>Bodyweight and dumbbells. Copy one, then shape it around you.</p></div>
+        <div className="section-heading"><div><span className="eyebrow">Ready-made</span><h2 className="display section-title">Starter plans</h2></div></div>
         <div className="preset-strip">
           {PRESET_PLANS.map((preset, index) => <article className="preset-card" key={preset.name}>
+            <button className="icon-button preset-copy" onClick={() => void store.copyPreset(index)} aria-label={`Copy ${preset.name}`}><Plus /></button>
             <span className="preset-count display">{preset.exerciseIds.length}</span>
-            <div><small>exercises</small><h3 className="display">{preset.name}</h3></div>
-            <button className="icon-button" onClick={() => void store.copyPreset(index)} aria-label={`Copy ${preset.name}`}><Plus /></button>
+            <div className="preset-card-copy"><small>exercises</small><h3 className="display">{preset.name}</h3></div>
           </article>)}
         </div>
       </section>
