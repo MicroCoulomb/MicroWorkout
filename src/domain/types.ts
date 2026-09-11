@@ -1,5 +1,6 @@
 export type WeightUnit = "kg" | "lb";
-export type MuscleGroup = "Chest" | "Back" | "Shoulders" | "Arms" | "Legs" | "Glutes";
+export const MUSCLE_GROUPS = ["Chest", "Front Delts", "Side Delts", "Rear Delts", "Triceps", "Lats", "Traps", "Biceps", "Forearms", "Quads", "Glutes", "Hamstrings", "Calves", "Abs", "Obliques", "Lower back"] as const;
+export type MuscleGroup = typeof MUSCLE_GROUPS[number];
 export type Equipment = "Bodyweight" | "Dumbbells";
 
 export interface Exercise {

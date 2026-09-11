@@ -9,7 +9,7 @@ function session(overrides: Partial<WorkoutSession> = {}): WorkoutSession {
     exercises: [
       { id: "exercise-1", sourceExerciseId: "push-up", name: "Push-Up", muscleGroup: "Chest", equipment: "Bodyweight", status: "completed", sets: [{ id: "set-1", reps: 10, weightKg: null, completedAt: 2_000 }] },
       { id: "exercise-2", sourceExerciseId: "press", name: "Press", muscleGroup: "Chest", equipment: "Dumbbells", status: "pending", sets: [{ id: "set-2", reps: 8, weightKg: 10, completedAt: 3_000 }] },
-      { id: "exercise-3", sourceExerciseId: "raise", name: "Raise", muscleGroup: "Shoulders", equipment: "Dumbbells", status: "pending", sets: [] },
+      { id: "exercise-3", sourceExerciseId: "raise", name: "Raise", muscleGroup: "Side Delts", equipment: "Dumbbells", status: "pending", sets: [] },
     ],
     ...overrides,
   };

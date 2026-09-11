@@ -294,6 +294,9 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 .shared-exercise-list span, .shared-exercise-list small { display: block; }
 .shared-exercise-list small { margin-top: 3px; color: var(--muted); font-size: .7rem; }
 .shared-exercise-list .button-danger { min-height: 38px; padding: 0 12px; }
+.shared-exercise-actions { display: flex; gap: 7px; }
+.shared-exercise-actions .button-secondary, .shared-exercise-actions .button-danger { min-height: 38px; padding: 0 12px; }
+.exercise-editor-dialog { width: min(100%, 540px); }
 .install-card { background: linear-gradient(145deg, rgba(255,90,31,.18), #171719 55%); }
 .install-card .button-primary { width: 100%; margin-top: 20px; }
 .danger-zone { grid-column: 1/-1; display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }

@@ -3,7 +3,7 @@
 import { ArrowDown, ArrowUp, Copy, Eye, MoreHorizontal, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PRESET_PLANS } from "@/domain/presets";
-import type { Equipment, MuscleGroup, WorkoutPlan } from "@/domain/types";
+import { MUSCLE_GROUPS, type Equipment, type MuscleGroup, type WorkoutPlan } from "@/domain/types";
 import { useWorkoutStore } from "@/features/workouts/workout-store";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
@@ -186,7 +186,7 @@ function PlanEditor({ plan, onClose, onCreateCustomExercise }: { plan?: WorkoutP
     <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="plan-editor-title">
       <div className="row-between"><div><span className="eyebrow">Plan editor</span><h2 id="plan-editor-title" className="display">{plan ? "Edit plan" : "New plan"}</h2></div><button className="icon-button" onClick={onClose} aria-label="Close"><X /></button></div>
       <div className="editor-fields">
-        <label className="field">Plan name<input value={name} maxLength={80} onChange={(event) => setName(event.target.value)} placeholder="Upper body burn" autoFocus={!plan} /></label>
+        <label className="field">Plan name<input value={name} maxLength={80} onChange={(event) => setName(event.target.value)} placeholder="Upper body burn" /></label>
         <label className="field">Default rest (seconds)<input type="number" min="0" value={restSeconds} onChange={(event) => setRestSeconds(Math.max(0, Number(event.target.value)))} /></label>
       </div>
       <div className="selected-list">
@@ -230,8 +230,8 @@ function CustomExerciseDialog({ onClose, onSaved }: { onClose(): void; onSaved(i
     <div className="dialog custom-exercise-dialog" role="dialog" aria-modal="true" aria-labelledby="custom-exercise-title">
       <div className="row-between"><div><span className="eyebrow">Exercise library</span><h2 id="custom-exercise-title" className="display">New custom exercise</h2></div><button className="icon-button" onClick={onClose} aria-label="Close"><X /></button></div>
       <div className="editor-fields">
-        <label className="field">Exercise name<input value={name} onChange={(event) => { setName(event.target.value); setError(""); }} placeholder="Single-arm press" autoFocus /></label>
-        <label className="field">Muscle group<select value={muscleGroup} onChange={(event) => setMuscleGroup(event.target.value as MuscleGroup)}>{["Chest", "Back", "Shoulders", "Arms", "Legs", "Glutes"].map((value) => <option key={value}>{value}</option>)}</select></label>
+        <label className="field">Exercise name<input value={name} onChange={(event) => { setName(event.target.value); setError(""); }} placeholder="Single-arm press" /></label>
+        <label className="field">Muscle group<select value={muscleGroup} onChange={(event) => setMuscleGroup(event.target.value as MuscleGroup)}>{MUSCLE_GROUPS.map((value) => <option key={value}>{value}</option>)}</select></label>
         <label className="field">Equipment<select value={equipment} onChange={(event) => setEquipment(event.target.value as Equipment)}><option>Bodyweight</option><option>Dumbbells</option></select></label>
       </div>
       {error && <p className="custom-exercise-error" role="alert">{error}</p>}

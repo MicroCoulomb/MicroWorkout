@@ -1,8 +1,8 @@
 "use client";
 
-import { ChevronDown, Info, LogOut, Search, ShieldCheck, Trash2 } from "lucide-react";
+import { ChevronDown, Info, LogOut, Pencil, Search, ShieldCheck, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { WeightUnit } from "@/domain/types";
+import { MUSCLE_GROUPS, type Equipment, type MuscleGroup, type WeightUnit } from "@/domain/types";
 import { useWorkoutStore } from "@/features/workouts/workout-store";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
@@ -82,14 +82,18 @@ export function SettingsScreen({ isAdmin, canDeleteAccount, syncEnabled, onAdmin
 interface SharedExerciseRecord {
   id: string;
   name: string;
-  muscleGroup: string;
-  equipment: string;
+  muscleGroup: MuscleGroup;
+  equipment: Equipment;
+  builtin: boolean;
+  retiredAt: string | null;
 }
 
 function SharedExerciseLibrary() {
+  const store = useWorkoutStore();
   const [exercises, setExercises] = useState<SharedExerciseRecord[]>([]);
   const [query, setQuery] = useState("");
   const [retiring, setRetiring] = useState<SharedExerciseRecord>();
+  const [editing, setEditing] = useState<SharedExerciseRecord>();
   const [error, setError] = useState("");
 
   async function load() {
@@ -115,5 +119,20 @@ function SharedExerciseLibrary() {
   }
 
   const visibleExercises = exercises.filter((exercise) => exercise.name.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()));
-  return <section className="shared-exercise-admin card"><span className="eyebrow">Owner tools</span><h2 className="display">Shared exercise library</h2><p>Retired exercises stay in existing plans and workout history, but can no longer be added to new plans.</p><label className="search-field"><Search size={18} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search shared exercises" aria-label="Search shared exercises" /></label><div className="shared-exercise-list">{visibleExercises.map((exercise) => <div key={exercise.id}><span><strong>{exercise.name}</strong><small>{exercise.muscleGroup} · {exercise.equipment}</small></span><button className="button-danger" onClick={() => setRetiring(exercise)}><Trash2 size={16} /> Retire</button></div>)}</div>{error && <p className="form-error">{error}</p>}{retiring && <ConfirmDialog title="Retire shared exercise?" message={`${retiring.name} will be hidden from new plans. Existing plans and workout history will remain unchanged.`} confirmLabel="Retire exercise" tone="danger" onClose={() => setRetiring(undefined)} onConfirm={retire} />}</section>;
+  return <section className="shared-exercise-admin card"><span className="eyebrow">Owner tools</span><h2 className="display">Exercise library</h2><p>Edit every exercise in the shared library. Retired custom exercises stay in existing plans and workout history.</p><label className="search-field"><Search size={18} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search exercises" aria-label="Search shared exercises" /></label><div className="shared-exercise-list">{visibleExercises.map((exercise) => <div key={exercise.id}><span><strong>{exercise.name}</strong><small>{exercise.muscleGroup} · {exercise.equipment}{exercise.builtin ? " · Built-in" : ""}{exercise.retiredAt ? " · Retired" : ""}</small></span><div className="shared-exercise-actions"><button className="button-secondary" onClick={() => setEditing(exercise)}><Pencil size={16} /> Edit</button>{!exercise.builtin && !exercise.retiredAt && <button className="button-danger" onClick={() => setRetiring(exercise)}><Trash2 size={16} /> Retire</button>}</div></div>)}</div>{error && <p className="form-error">{error}</p>}{editing && <EditExerciseDialog exercise={editing} onClose={() => setEditing(undefined)} onSaved={async (updated) => { await store.syncNow(); setExercises((current) => current.map((exercise) => exercise.id === updated.id ? updated : exercise)); setEditing(undefined); }} />}{retiring && <ConfirmDialog title="Retire shared exercise?" message={`${retiring.name} will be hidden from new plans. Existing plans and workout history will remain unchanged.`} confirmLabel="Retire exercise" tone="danger" onClose={() => setRetiring(undefined)} onConfirm={retire} />}</section>;
+}
+
+function EditExerciseDialog({ exercise, onClose, onSaved }: { exercise: SharedExerciseRecord; onClose(): void; onSaved(exercise: SharedExerciseRecord): Promise<void> }) {
+  const [name, setName] = useState(exercise.name);
+  const [muscleGroup, setMuscleGroup] = useState<MuscleGroup>(exercise.muscleGroup);
+  const [equipment, setEquipment] = useState<Equipment>(exercise.equipment);
+  const [error, setError] = useState("");
+
+  async function save() {
+    const response = await fetch("/api/admin/exercises", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ id: exercise.id, name, muscleGroup, equipment }) });
+    if (response.ok) await onSaved(await response.json() as SharedExerciseRecord);
+    else setError(response.status === 409 ? "That exercise name is already in use." : "Could not save the exercise.");
+  }
+
+  return <div className="dialog-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}><section className="dialog exercise-editor-dialog" role="dialog" aria-modal="true" aria-labelledby="exercise-editor-title"><span className="eyebrow">Owner editor</span><h2 id="exercise-editor-title" className="display">Edit exercise</h2><div className="editor-fields"><label className="field">Exercise name<input value={name} onChange={(event) => setName(event.target.value)} /></label><label className="field">Muscle group<select value={muscleGroup} onChange={(event) => setMuscleGroup(event.target.value as MuscleGroup)}>{MUSCLE_GROUPS.map((group) => <option key={group}>{group}</option>)}</select></label><label className="field">Equipment<select value={equipment} onChange={(event) => setEquipment(event.target.value as Equipment)}><option>Bodyweight</option><option>Dumbbells</option></select></label></div>{error && <p className="form-error">{error}</p>}<div className="dialog-actions"><button className="button-secondary" onClick={onClose}>Cancel</button><button className="button-primary" disabled={!name.trim()} onClick={() => void save()}>Save exercise</button></div></section></div>;
 }

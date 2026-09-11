@@ -74,6 +74,16 @@ describe("PlansScreen card controls", () => {
     expect(screen.getByLabelText("Plan name")).not.toBe(document.activeElement);
   });
 
+  it("does not focus fields when opening a new plan or custom exercise dialog", () => {
+    render(<PlansScreen />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Create new workout plan" }));
+    expect(screen.getByLabelText("Plan name")).not.toBe(document.activeElement);
+
+    fireEvent.click(screen.getByRole("button", { name: "Create custom exercise" }));
+    expect(screen.getByLabelText("Exercise name")).not.toBe(document.activeElement);
+  });
+
   it("searches exercises by name, muscle group, and equipment", () => {
     render(<PlansScreen />);
 

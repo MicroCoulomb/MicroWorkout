@@ -22,6 +22,13 @@
       "when": 1789147154979,
       "tag": "0002_shared_exercise_pool",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1789147154980,
+      "tag": "0003_detailed_muscle_groups",
+      "breakpoints": true
     }
   ]
 }

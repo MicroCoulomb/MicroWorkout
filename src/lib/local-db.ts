@@ -37,14 +37,40 @@ export class MicroWorkoutDatabase extends Dexie {
       outbox: "id, entityType, entityId, createdAt",
       syncMeta: "id",
     });
+    this.version(4).stores({
+      exercises: "id, name, muscleGroup, equipment, builtin, updatedAt, retiredAt",
+      exerciseAliases: "id, canonicalId",
+      plans: "id, name, updatedAt",
+      sessions: "id, deviceId, status, startedAt, updatedAt",
+      profiles: "id",
+      outbox: "id, entityType, entityId, createdAt",
+      syncMeta: "id",
+    }).upgrade(async (tx) => {
+      await tx.table("exercises").toCollection().modify((exercise: Exercise) => { exercise.muscleGroup = currentMuscleGroup(exercise.muscleGroup); });
+      await tx.table("outbox").where("entityType").equals("exercise").modify((mutation: OutboxMutation) => {
+        if (!mutation.payload) return;
+        const exercise = mutation.payload as Exercise;
+        mutation.payload = { ...exercise, muscleGroup: currentMuscleGroup(exercise.muscleGroup) };
+      });
+    });
   }
+}
+
+function currentMuscleGroup(group: string): Exercise["muscleGroup"] {
+  if (group === "Back") return "Lats";
+  if (group === "Shoulders") return "Front Delts";
+  if (group === "Arms") return "Biceps";
+  if (group === "Legs") return "Quads";
+  return group as Exercise["muscleGroup"];
 }
 
 export async function initializeLocalData(db: MicroWorkoutDatabase, name: string, initialProfile?: UserProfile) {
   const now = Date.now();
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Manila";
   await db.transaction("rw", db.exercises, db.profiles, db.outbox, async () => {
-    await db.exercises.bulkPut(BUILTIN_EXERCISES.map((exercise) => ({ ...exercise, updatedAt: now })));
+    const builtinIds = BUILTIN_EXERCISES.map((exercise) => exercise.id);
+    const existingBuiltins = await db.exercises.bulkGet(builtinIds);
+    await db.exercises.bulkAdd(BUILTIN_EXERCISES.filter((_, index) => !existingBuiltins[index]).map((exercise) => ({ ...exercise, updatedAt: now })));
     if (!(await db.profiles.get("profile"))) {
       const profile: UserProfile = initialProfile ?? {
         id: "profile",

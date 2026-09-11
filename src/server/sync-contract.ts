@@ -1,8 +1,9 @@
 import { z } from "zod";
+import { MUSCLE_GROUPS } from "@/domain/types";
 
 const exerciseSchema = z.object({
   id: z.uuid(), name: z.string().trim().min(1).max(120),
-  muscleGroup: z.enum(["Chest", "Back", "Shoulders", "Arms", "Legs", "Glutes"]),
+  muscleGroup: z.enum(MUSCLE_GROUPS),
   equipment: z.enum(["Bodyweight", "Dumbbells"]), builtin: z.boolean(), updatedAt: z.number(),
 });
 
