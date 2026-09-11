@@ -83,7 +83,7 @@ describe("SettingsScreen account controls", () => {
 
     expect(await screen.findByRole("dialog", { name: "Edit Exercise Library" })).toBeTruthy();
     expect(await screen.findByText("Push-Up")).toBeTruthy();
-    expect(screen.getByText("Retired Exercise")).toBeTruthy();
+    expect(screen.queryByText("Retired Exercise")).toBeNull();
     expect(screen.getByRole("button", { name: "Delete Push-Up" })).toBeTruthy();
   });
 

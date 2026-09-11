@@ -1,4 +1,4 @@
-import { asc, eq, isNull } from "drizzle-orm";
+import { and, asc, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { MUSCLE_GROUPS } from "@/domain/types";
 
@@ -14,7 +14,7 @@ export async function GET(request: Request) {
   const context = await requireAdmin(request);
   if (!context) return Response.json({ error: "Forbidden" }, { status: 403 });
   const { exercises } = await import("@/server/db/schema");
-  const records = await context.db.select({ id: exercises.id, name: exercises.name, muscleGroup: exercises.muscleGroup, equipment: exercises.equipment, builtin: exercises.builtin, retiredAt: exercises.retiredAt }).from(exercises).where(isNull(exercises.deletedAt)).orderBy(asc(exercises.name));
+  const records = await context.db.select({ id: exercises.id, name: exercises.name, muscleGroup: exercises.muscleGroup, equipment: exercises.equipment, builtin: exercises.builtin, retiredAt: exercises.retiredAt }).from(exercises).where(and(isNull(exercises.deletedAt), isNull(exercises.retiredAt))).orderBy(asc(exercises.name));
   return Response.json(records);
 }
 
