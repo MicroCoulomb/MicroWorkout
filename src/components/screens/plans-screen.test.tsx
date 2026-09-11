@@ -32,18 +32,27 @@ afterEach(() => {
 });
 
 describe("PlansScreen card controls", () => {
-  it("shows one compact exercise list at a time and closes it outside the card", () => {
+  it("keeps the current list in place until another view control completes its click", () => {
     render(<PlansScreen />);
 
     fireEvent.click(screen.getByRole("button", { name: "View exercises for Push day" }));
     expect(screen.getByText("Push-up")).toBeTruthy();
 
-    fireEvent.click(screen.getByRole("button", { name: "View exercises for Pull day" }));
+    const pullViewButton = screen.getByRole("button", { name: "View exercises for Pull day" });
+    fireEvent.pointerDown(pullViewButton);
+    expect(screen.getByText("Push-up")).toBeTruthy();
+
+    fireEvent.click(pullViewButton);
     expect(screen.queryByText("Push-up")).toBeNull();
     expect(screen.getByText("Dumbbell row")).toBeTruthy();
+    expect(pullViewButton.getAttribute("aria-expanded")).toBe("true");
 
-    fireEvent.pointerDown(document.body);
+    fireEvent.click(pullViewButton);
+    expect(pullViewButton.getAttribute("aria-expanded")).toBe("false");
     expect(screen.queryByText("Dumbbell row")).toBeNull();
+
+    fireEvent.click(document.body);
+    expect(screen.getByRole("button", { name: "View exercises for Pull day" }).getAttribute("aria-expanded")).toBe("false");
   });
 
   it("closes the plan actions menu outside the card", () => {
@@ -52,7 +61,16 @@ describe("PlansScreen card controls", () => {
     fireEvent.click(screen.getByRole("button", { name: "Actions for Push day" }));
     expect(screen.getByRole("button", { name: "Edit" })).toBeTruthy();
 
-    fireEvent.pointerDown(document.body);
+    fireEvent.click(document.body);
     expect(screen.queryByRole("button", { name: "Edit" })).toBeNull();
+  });
+
+  it("does not focus the plan name when editing an existing plan", () => {
+    render(<PlansScreen />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Actions for Push day" }));
+    fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+
+    expect(screen.getByLabelText("Plan name")).not.toBe(document.activeElement);
   });
 });

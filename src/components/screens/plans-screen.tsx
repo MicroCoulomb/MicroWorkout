@@ -16,10 +16,10 @@ export function PlansScreen() {
   const cardRefs = useRef(new Map<string, HTMLElement>());
 
   useEffect(() => {
-    function dismiss(event: PointerEvent) {
+    function dismiss(event: MouseEvent) {
       const target = event.target as Node;
-      if (openPlanId && !cardRefs.current.get(openPlanId)?.contains(target)) setOpenPlanId(undefined);
-      if (menu && !cardRefs.current.get(menu)?.contains(target)) setMenu(undefined);
+      setOpenPlanId((currentPlanId) => currentPlanId && !cardRefs.current.get(currentPlanId)?.contains(target) ? undefined : currentPlanId);
+      setMenu((currentMenuId) => currentMenuId && !cardRefs.current.get(currentMenuId)?.contains(target) ? undefined : currentMenuId);
     }
 
     function closeOnEscape(event: KeyboardEvent) {
@@ -28,13 +28,13 @@ export function PlansScreen() {
       setMenu(undefined);
     }
 
-    document.addEventListener("pointerdown", dismiss);
+    document.addEventListener("click", dismiss);
     document.addEventListener("keydown", closeOnEscape);
     return () => {
-      document.removeEventListener("pointerdown", dismiss);
+      document.removeEventListener("click", dismiss);
       document.removeEventListener("keydown", closeOnEscape);
     };
-  }, [menu, openPlanId]);
+  }, []);
 
   return (
     <>
@@ -134,7 +134,7 @@ function PlanEditor({ plan, onClose }: { plan?: WorkoutPlan; onClose(): void }) 
     <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="plan-editor-title">
       <div className="row-between"><div><span className="eyebrow">Plan editor</span><h2 id="plan-editor-title" className="display">{plan ? "Edit plan" : "New plan"}</h2></div><button className="icon-button" onClick={onClose} aria-label="Close"><X /></button></div>
       <div className="editor-fields">
-        <label className="field">Plan name<input value={name} maxLength={80} onChange={(event) => setName(event.target.value)} placeholder="Upper body burn" autoFocus /></label>
+        <label className="field">Plan name<input value={name} maxLength={80} onChange={(event) => setName(event.target.value)} placeholder="Upper body burn" autoFocus={!plan} /></label>
         <label className="field">Default rest (seconds)<input type="number" min="0" value={restSeconds} onChange={(event) => setRestSeconds(Math.max(0, Number(event.target.value)))} /></label>
       </div>
       <div className="selected-list">
