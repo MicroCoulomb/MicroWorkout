@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, ChevronUp, Dumbbell, Play, RotateCcw, X } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronUp, Dumbbell, Pause, Play, RotateCcw, X } from "lucide-react";
 import { useState } from "react";
 import { PRESET_PLANS } from "@/domain/presets";
 import type { WorkoutPlan } from "@/domain/types";
@@ -72,14 +72,24 @@ export function WorkoutStartScreen({ plan, onBack, onStart }: { plan: WorkoutPla
     finally { setStarting(false); }
   }
 
-  return <main className="prestart-shell">
-    <button className="prestart-back" onClick={onBack}>Back</button>
-    <section className="prestart-card card">
-      <span className="eyebrow">Up next</span>
-      <h1 className="display">{plan.name}</h1>
-      <div className="prestart-meta"><span>{exerciseNames.length} exercises</span><span>{plan.restSeconds}s rest</span></div>
+  return <main className="workout-shell prestart-shell">
+    <header className="workout-top">
+      <button className="icon-button" onClick={onBack} aria-label="Back to workout selection"><ChevronLeft /></button>
+      <div><span>{plan.name}</span><b className="display">00:00</b></div>
+      <span className="icon-button prestart-pause" aria-hidden="true"><Pause fill="currentColor" /></span>
+    </header>
+    <section className="exercise-stage prestart-stage">
+      <div className="progress-track"><span style={{ width: "0%" }} /></div>
+      <div className="exercise-counter display">00<small>/{String(exerciseNames.length).padStart(2, "0")}</small></div>
+      <span className="eyebrow">First up</span>
+      <h1 className="display">{exerciseNames[0] ?? "Start workout"}</h1>
+      <p className="muted">Your timer starts when you press play.</p>
+      <button className="prestart-button" disabled={starting} onClick={() => void start()}><Play size={26} fill="currentColor" /><strong className="display">{starting ? "Starting" : "Start workout"}</strong></button>
+    </section>
+    <section className="live-log prestart-details">
+      <span className="eyebrow">Workout details</span>
+      <div className="prestart-meta"><span>{exerciseNames.length} exercises</span><span>{plan.restSeconds}s rest between sets</span></div>
       <ol className="prestart-exercises">{exerciseNames.map((name, index) => <li key={`${name}-${index}`}><b>{String(index + 1).padStart(2, "0")}</b><span>{name}</span></li>)}</ol>
-      <div className="prestart-action"><span>Ready when you are</span><button className="prestart-button" disabled={starting} onClick={() => void start()}><Play size={24} fill="currentColor" /><strong className="display">{starting ? "Starting" : "Start workout"}</strong></button></div>
     </section>
   </main>;
 }

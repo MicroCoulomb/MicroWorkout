@@ -109,20 +109,19 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 .starter-choice-list { margin: 0; padding: 0 12px 12px; border-top: 1px solid #39393e; }
 .starter-choice-list .workout-choice { min-height: 62px; }
 .starter-choice-list .workout-choice-mark { width: 36px; height: 36px; border-radius: 12px; }
-.prestart-shell { width: min(100%, 760px); min-height: 100vh; margin: 0 auto; padding: max(18px, calc(env(safe-area-inset-top) + 12px)) 18px max(28px, env(safe-area-inset-bottom)); display: grid; align-content: center; }
-.prestart-back { justify-self: start; margin-bottom: 18px; padding: 7px 0; border: 0; color: var(--muted); background: transparent; cursor: pointer; font-weight: 750; }
-.prestart-card { padding: clamp(24px, 5vw, 42px); overflow: hidden; background: radial-gradient(circle at 88% 8%, rgba(255,90,31,.18), transparent 19rem), rgba(23,23,25,.96); }
-.prestart-card h1 { max-width: 620px; margin: 14px 0 10px; font-size: clamp(3.4rem, 10vw, 6.6rem); line-height: .8; }
+.prestart-pause { color: var(--muted); opacity: .38; pointer-events: none; }
+.prestart-stage { padding-bottom: 28px; }
 .prestart-meta { display: flex; flex-wrap: wrap; gap: 8px; color: var(--muted); font-size: .78rem; }
 .prestart-meta span { padding: 7px 10px; border: 1px solid #3b3b40; border-radius: 999px; background: rgba(12,12,14,.5); }
-.prestart-exercises { display: grid; gap: 8px; max-height: min(30dvh, 310px); margin: 28px 0; padding: 0; overflow: auto; list-style: none; }
+.prestart-button { width: 156px; min-height: 156px; margin: 30px auto 0; display: grid; place-items: center; align-content: center; gap: 9px; border: 1px solid rgba(255,217,194,.45); border-radius: 50%; color: #180b04; background: radial-gradient(circle at 38% 30%, #ff9b62, var(--orange) 64%); cursor: pointer; box-shadow: 0 16px 40px rgba(255,90,31,.3); transition: transform .18s ease, box-shadow .18s ease; }
+.prestart-button:hover { transform: scale(1.025); box-shadow: 0 20px 48px rgba(255,90,31,.42); }
+.prestart-button strong { font-size: .9rem; }
+.prestart-details { padding-top: 10px; }
+.prestart-details > .eyebrow { display: block; margin-bottom: 12px; }
+.prestart-exercises { display: grid; gap: 8px; margin: 20px 0 0; padding: 0; list-style: none; }
 .prestart-exercises li { min-height: 48px; padding: 0 14px; display: grid; grid-template-columns: 32px 1fr; align-items: center; gap: 10px; border-bottom: 1px solid rgba(58,58,62,.75); }
 .prestart-exercises b { color: var(--orange); font: 700 .82rem var(--font-display); }
 .prestart-exercises span { font-weight: 700; }
-.prestart-action { display: grid; justify-items: center; gap: 14px; padding-top: 28px; border-top: 1px solid #38383d; color: var(--muted); font-size: .75rem; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
-.prestart-button { width: min(100%, 280px); min-height: 116px; display: grid; place-items: center; align-content: center; gap: 9px; border: 1px solid rgba(255,217,194,.45); border-radius: 50%; aspect-ratio: 1; color: #180b04; background: radial-gradient(circle at 38% 30%, #ff9b62, var(--orange) 64%); cursor: pointer; box-shadow: 0 16px 40px rgba(255,90,31,.3); transition: transform .18s ease, box-shadow .18s ease; }
-.prestart-button:hover { transform: scale(1.025); box-shadow: 0 20px 48px rgba(255,90,31,.42); }
-.prestart-button strong { font-size: 1rem; }
 .resume-banner { width: 100%; margin-bottom: 18px; padding: 13px 16px 13px 13px; color: var(--paper); background: #242427; border: 1px solid #3b3b40; border-radius: 22px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; text-align: left; cursor: pointer; }
 .resume-banner small, .resume-banner strong { display: block; }
 .resume-banner small { color: var(--muted); }
@@ -345,10 +344,8 @@ button:disabled { cursor: not-allowed; opacity: .45; }
   .dialog-backdrop { padding: 0; align-items: end; }
   .dialog { width: 100%; max-height: min(86dvh, 760px); padding: 24px 19px max(26px, env(safe-area-inset-bottom)); border-radius: 28px 28px 0 0; }
   .workout-picker { max-height: min(86dvh, 760px); }
-  .prestart-shell { padding: max(18px, calc(env(safe-area-inset-top) + 12px)) 14px max(22px, env(safe-area-inset-bottom)); align-content: start; }
-  .prestart-card { min-height: calc(100dvh - 100px); padding: 26px 20px; }
-  .prestart-card h1 { font-size: clamp(3.2rem, 15vw, 4.7rem); }
-  .prestart-exercises { max-height: none; }
+  .prestart-shell { padding-top: max(14px, calc(env(safe-area-inset-top) + 10px)); }
+  .prestart-button { width: 142px; min-height: 142px; margin-top: 26px; }
   .selected-row { grid-template-columns: 24px 1fr repeat(3,34px); font-size: .78rem; }
   .history-head { grid-template-columns: 72px 1fr auto; padding: 15px; }
   .summary-grid { grid-template-columns: repeat(3,1fr); }
