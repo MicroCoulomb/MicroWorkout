@@ -64,6 +64,7 @@ export const invitations = pgTable("invitations", {
 
 export const userProfiles = pgTable("user_profiles", {
   userId: text("user_id").primaryKey().references(() => users.id, { onDelete: "cascade" }),
+  displayName: text("display_name").notNull().default("Athlete"),
   weightUnit: text("weight_unit").notNull().default("kg"),
   weeklyGoal: integer("weekly_goal").notNull().default(3),
   timezone: text("timezone").notNull().default("UTC"),

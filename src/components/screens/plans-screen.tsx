@@ -45,7 +45,7 @@ export function PlansScreen() {
         </div>
       </section>
       {editing && <PlanEditor plan={editing === "new" ? undefined : editing} onClose={() => setEditing(undefined)} />}
-      {planToDelete && <ConfirmDialog title="Delete plan?" message={`“${planToDelete.name}” will be removed from this device.`} confirmLabel="Delete plan" tone="danger" onClose={() => setPlanToDelete(undefined)} onConfirm={() => store.deletePlan(planToDelete.id)} />}
+      {planToDelete && <ConfirmDialog title="Delete plan?" message={`“${planToDelete.name}” will be removed from your account on every device. Past workout sessions will remain in History.`} confirmLabel="Delete plan" tone="danger" onClose={() => setPlanToDelete(undefined)} onConfirm={() => store.deletePlan(planToDelete.id)} />}
     </>
   );
 }

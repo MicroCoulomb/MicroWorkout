@@ -30,13 +30,13 @@ export class MicroWorkoutDatabase extends Dexie {
   }
 }
 
-export async function initializeLocalData(db: MicroWorkoutDatabase, name: string) {
+export async function initializeLocalData(db: MicroWorkoutDatabase, name: string, initialProfile?: UserProfile) {
   const now = Date.now();
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Manila";
   await db.transaction("rw", db.exercises, db.profiles, db.outbox, async () => {
     await db.exercises.bulkPut(BUILTIN_EXERCISES.map((exercise) => ({ ...exercise, updatedAt: now })));
     if (!(await db.profiles.get("profile"))) {
-      const profile: UserProfile = {
+      const profile: UserProfile = initialProfile ?? {
         id: "profile",
         name,
         weightUnit: "kg",
@@ -45,7 +45,9 @@ export async function initializeLocalData(db: MicroWorkoutDatabase, name: string
         lastVerifiedAt: now,
       };
       await db.profiles.add(profile);
-      await db.outbox.add({ id: crypto.randomUUID(), entityType: "profile", entityId: "profile", operation: "upsert", payload: profile, createdAt: now });
+      if (!initialProfile) {
+        await db.outbox.add({ id: crypto.randomUUID(), entityType: "profile", entityId: "profile", operation: "upsert", payload: profile, createdAt: now });
+      }
     }
   });
 }

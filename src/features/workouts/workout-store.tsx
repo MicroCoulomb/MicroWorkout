@@ -33,7 +33,7 @@ interface StoreValue {
 
 const StoreContext = createContext<StoreValue | null>(null);
 
-export function WorkoutStoreProvider({ children, userId, userName, syncEnabled }: { children: ReactNode; userId: string; userName: string; syncEnabled: boolean }) {
+export function WorkoutStoreProvider({ children, userId, userName, syncEnabled, initialProfile }: { children: ReactNode; userId: string; userName: string; syncEnabled: boolean; initialProfile?: UserProfile }) {
   const localDb = useMemo(() => new MicroWorkoutDatabase(userId), [userId]);
   const currentDeviceId = useMemo(() => deviceId(userId), [userId]);
   const exercises = useLiveQuery(() => localDb.exercises.orderBy("name").toArray(), [localDb]) ?? [];
@@ -44,9 +44,9 @@ export function WorkoutStoreProvider({ children, userId, userName, syncEnabled }
   const [syncStatus, setSyncStatus] = useState<StoreValue["syncStatus"]>(syncEnabled ? "syncing" : "local");
 
   useEffect(() => {
-    void initializeLocalData(localDb, userName);
+    void initializeLocalData(localDb, userName, initialProfile);
     return () => localDb.close({ disableAutoOpen: false });
-  }, [localDb, userName]);
+  }, [initialProfile, localDb, userName]);
 
   const clearDatabase = useCallback(async () => {
     await localDb.transaction("rw", [localDb.plans, localDb.sessions, localDb.exercises, localDb.profiles, localDb.outbox, localDb.syncMeta], async () => {
@@ -74,6 +74,12 @@ export function WorkoutStoreProvider({ children, userId, userName, syncEnabled }
     window.addEventListener("online", online); window.addEventListener("offline", offline); document.addEventListener("visibilitychange", visible);
     return () => { window.clearTimeout(initialSync); window.removeEventListener("online", online); window.removeEventListener("offline", offline); document.removeEventListener("visibilitychange", visible); };
   }, [syncEnabled, syncNow]);
+
+  useEffect(() => {
+    if (!syncEnabled || pendingChanges === 0 || syncStatus !== "synced" || !navigator.onLine) return;
+    const pendingSync = window.setTimeout(() => void syncNow(), 0);
+    return () => window.clearTimeout(pendingSync);
+  }, [pendingChanges, syncEnabled, syncNow, syncStatus]);
 
   async function savePlan(input: Pick<WorkoutPlan, "id" | "name" | "restSeconds" | "exerciseIds">) {
     const plan = { ...input, name: input.name.trim(), updatedAt: Date.now() };
@@ -188,7 +194,6 @@ export function WorkoutStoreProvider({ children, userId, userName, syncEnabled }
 
   async function clearLocalData() {
     await clearDatabase();
-    await initializeLocalData(localDb, userName);
   }
 
   return (

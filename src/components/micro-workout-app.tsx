@@ -10,16 +10,16 @@ import { AdminScreen } from "./screens/admin-screen";
 import { WorkoutScreen } from "./screens/workout-screen";
 import { WorkoutLauncher, WorkoutStartScreen } from "./workout-launcher";
 import { WorkoutStoreProvider, useWorkoutStore } from "@/features/workouts/workout-store";
-import type { WorkoutPlan } from "@/domain/types";
+import type { UserProfile, WorkoutPlan } from "@/domain/types";
 
 export type AppView = "home" | "plans" | "history" | "settings" | "admin";
 
-export function MicroWorkoutApp({ userId = "demo", userName = "Athlete", syncEnabled = false, isAdmin = false, canDeleteAccount = true }: { userId?: string; userName?: string; syncEnabled?: boolean; isAdmin?: boolean; canDeleteAccount?: boolean }) {
+export function MicroWorkoutApp({ userId = "demo", userName = "Athlete", syncEnabled = false, isAdmin = false, canDeleteAccount = true, initialProfile }: { userId?: string; userName?: string; syncEnabled?: boolean; isAdmin?: boolean; canDeleteAccount?: boolean; initialProfile?: UserProfile }) {
   useEffect(() => {
     if (syncEnabled && navigator.onLine) window.localStorage.setItem("microworkout-last-user", JSON.stringify({ id: userId, name: userName, verifiedAt: Date.now() }));
   }, [syncEnabled, userId, userName]);
   return (
-    <WorkoutStoreProvider userId={userId} userName={userName} syncEnabled={syncEnabled}>
+    <WorkoutStoreProvider userId={userId} userName={userName} syncEnabled={syncEnabled} initialProfile={initialProfile}>
       <AppContent isAdmin={isAdmin} canDeleteAccount={canDeleteAccount} syncEnabled={syncEnabled} />
     </WorkoutStoreProvider>
   );

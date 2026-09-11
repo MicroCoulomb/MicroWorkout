@@ -45,7 +45,7 @@ export const auth = betterAuth({
         after: async (user) => {
           const email = user.email.trim().toLowerCase();
           await db.transaction(async (tx) => {
-            await tx.insert(userProfiles).values({ userId: user.id }).onConflictDoNothing();
+            await tx.insert(userProfiles).values({ userId: user.id, displayName: user.name }).onConflictDoNothing();
             if (email === ownerEmail) {
               await tx.insert(invitations).values({ email, status: "active", acceptedByUserId: user.id }).onConflictDoUpdate({ target: invitations.email, set: { status: "active", acceptedByUserId: user.id, updatedAt: new Date() } });
             } else {
