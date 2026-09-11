@@ -1,7 +1,7 @@
 "use client";
 
-import { ArrowDown, ArrowUp, Copy, MoreHorizontal, Pencil, Plus, Search, Trash2, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { ArrowDown, ArrowUp, Copy, Eye, MoreHorizontal, Pencil, Plus, Search, Trash2, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { PRESET_PLANS } from "@/domain/presets";
 import type { Equipment, MuscleGroup, WorkoutPlan } from "@/domain/types";
 import { useWorkoutStore } from "@/features/workouts/workout-store";
@@ -11,27 +11,83 @@ export function PlansScreen() {
   const store = useWorkoutStore();
   const [editing, setEditing] = useState<WorkoutPlan | "new">();
   const [menu, setMenu] = useState<string>();
+  const [openPlanId, setOpenPlanId] = useState<string>();
   const [planToDelete, setPlanToDelete] = useState<WorkoutPlan>();
+  const cardRefs = useRef(new Map<string, HTMLElement>());
+
+  useEffect(() => {
+    function dismiss(event: PointerEvent) {
+      const target = event.target as Node;
+      if (openPlanId && !cardRefs.current.get(openPlanId)?.contains(target)) setOpenPlanId(undefined);
+      if (menu && !cardRefs.current.get(menu)?.contains(target)) setMenu(undefined);
+    }
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+      setOpenPlanId(undefined);
+      setMenu(undefined);
+    }
+
+    document.addEventListener("pointerdown", dismiss);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", dismiss);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [menu, openPlanId]);
 
   return (
     <>
       <header className="page-header plans-header">
         <div><h1 className="page-title">Workout plans</h1></div>
-        <button className="button-primary" onClick={() => setEditing("new")}><Plus size={19} /> New plan</button>
       </header>
 
       {store.plans.length > 0 && <section className="plan-grid" aria-label="Your workout plans">
-        {store.plans.map((plan) => <article className="plan-card card" key={plan.id}>
-          <button className="plan-menu" onClick={() => setMenu(menu === plan.id ? undefined : plan.id)} aria-label={`Actions for ${plan.name}`}><MoreHorizontal /></button>
-          {menu === plan.id && <div className="popover">
-            <button onClick={() => { setEditing(plan); setMenu(undefined); }}><Pencil size={15} /> Edit</button>
-            <button onClick={() => { void store.duplicatePlan(plan); setMenu(undefined); }}><Copy size={15} /> Duplicate</button>
-            <button className="danger-text" onClick={() => { setPlanToDelete(plan); setMenu(undefined); }}><Trash2 size={15} /> Delete</button>
-          </div>}
-          <span className="eyebrow">{plan.exerciseIds.length} exercises · {plan.restSeconds}s rest</span>
-          <h2 className="display">{plan.name}</h2>
-          <p>{plan.exerciseIds.slice(0, 3).map((id) => store.exercises.find((exercise) => exercise.id === id)?.name).filter(Boolean).join(" · ")}{plan.exerciseIds.length > 3 ? "…" : ""}</p>
-        </article>)}
+        {store.plans.map((plan) => {
+          const isOpen = openPlanId === plan.id;
+          const isMenuOpen = menu === plan.id;
+
+          return <article className="plan-card card" key={plan.id} ref={(node) => {
+            if (node) cardRefs.current.set(plan.id, node);
+            else cardRefs.current.delete(plan.id);
+          }}>
+            <div className="plan-card-controls">
+              <button
+                className="plan-view"
+                aria-label={`View exercises for ${plan.name}`}
+                aria-controls={`plan-exercises-${plan.id}`}
+                aria-expanded={isOpen}
+                onClick={() => {
+                  setOpenPlanId(isOpen ? undefined : plan.id);
+                  setMenu(undefined);
+                }}
+              ><Eye size={18} /></button>
+              <button
+                className="plan-menu"
+                aria-label={`Actions for ${plan.name}`}
+                aria-controls={`plan-menu-${plan.id}`}
+                aria-expanded={isMenuOpen}
+                onClick={() => {
+                  setMenu(isMenuOpen ? undefined : plan.id);
+                  setOpenPlanId(undefined);
+                }}
+              ><MoreHorizontal size={19} /></button>
+            </div>
+            {isMenuOpen && <div id={`plan-menu-${plan.id}`} className="popover">
+              <button onClick={() => { setEditing(plan); setMenu(undefined); }}><Pencil size={15} /> Edit</button>
+              <button onClick={() => { void store.duplicatePlan(plan); setMenu(undefined); }}><Copy size={15} /> Duplicate</button>
+              <button className="danger-text" onClick={() => { setPlanToDelete(plan); setMenu(undefined); }}><Trash2 size={15} /> Delete</button>
+            </div>}
+            <span className="eyebrow">{plan.exerciseIds.length} exercises · {plan.restSeconds}s rest</span>
+            <h2 className="display">{plan.name}</h2>
+            {isOpen && <ol id={`plan-exercises-${plan.id}`} className="plan-exercise-list">
+              {plan.exerciseIds.map((exerciseId, index) => {
+                const exercise = store.exercises.find((item) => item.id === exerciseId);
+                return <li key={`${exerciseId}-${index}`}><b>{String(index + 1).padStart(2, "0")}</b><span>{exercise?.name ?? "Removed exercise"}</span></li>;
+              })}
+            </ol>}
+          </article>;
+        })}
       </section>}
 
       <section className="preset-section">
@@ -44,6 +100,7 @@ export function PlansScreen() {
           </article>)}
         </div>
       </section>
+      <button className="plan-create-launcher" onClick={() => setEditing("new")} aria-label="Create new workout plan"><Plus size={26} /></button>
       {editing && <PlanEditor plan={editing === "new" ? undefined : editing} onClose={() => setEditing(undefined)} />}
       {planToDelete && <ConfirmDialog title="Delete plan?" message={`“${planToDelete.name}” will be removed from your account on every device. Past workout sessions will remain in History.`} confirmLabel="Delete plan" tone="danger" onClose={() => setPlanToDelete(undefined)} onConfirm={() => store.deletePlan(planToDelete.id)} />}
     </>
