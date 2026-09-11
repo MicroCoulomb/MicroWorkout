@@ -296,6 +296,15 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 .signin-card .button-primary { width: 100%; margin-top: 20px; }
 .signin-card code { color: var(--orange-bright); }
 .signin-icon { width: 62px; height: 62px; display: grid; place-items: center; border-radius: 20px; color: #180a04; background: var(--orange); transform: rotate(-6deg); }
+.signin-login { width: min(100%, 460px); padding: max(28px, calc(env(safe-area-inset-top) + 16px)) 22px max(28px, calc(env(safe-area-inset-bottom) + 16px)); grid-template-columns: 1fr; grid-template-rows: auto auto; justify-items: center; align-content: center; gap: 26px; }
+.signin-brand { font-size: clamp(3rem, 12vw, 4.8rem); line-height: .78; text-align: center; }
+.signin-login-card { width: 100%; padding: 30px; text-align: center; }
+.signin-logo { width: 112px; height: auto; margin: 0 auto; display: block; object-fit: contain; }
+.signin-login-card h1 { margin: 22px 0 12px; font-size: clamp(3.1rem, 11vw, 4.2rem); line-height: .8; }
+.signin-note { max-width: 300px; margin: 0 auto 20px; color: var(--muted); font-size: .76rem; line-height: 1.45; }
+.signin-google-button { width: 100%; min-height: 54px; padding: 0 18px; display: inline-flex; align-items: center; justify-content: center; gap: 12px; border: 1px solid rgba(255,217,194,.36); border-radius: 15px; color: #190b05; background: var(--orange); cursor: pointer; font-weight: 750; transition: transform .16s ease, background .16s ease; }
+.signin-google-button:hover { transform: translateY(-1px); background: var(--orange-bright); }
+.google-mark { width: 20px; height: 20px; flex: 0 0 auto; }
 .back-link { margin: 0 0 22px -8px; border: 0; background: transparent; color: var(--muted); display: flex; align-items: center; gap: 6px; cursor: pointer; }
 .invite-card { padding: 26px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 .invite-card h2 { margin: 12px 0; font-size: 2.6rem; }
@@ -353,6 +362,8 @@ button:disabled { cursor: not-allowed; opacity: .45; }
   .signin-shell { padding: max(22px, calc(env(safe-area-inset-top) + 12px)) 22px 22px; grid-template-columns: 1fr; gap: 30px; align-content: center; }
   .signin-copy .brand { position: static; margin-bottom: 60px; }
   .signin-copy h1 { font-size: 4.7rem; }
+  .signin-login { min-height: 100dvh; padding: max(22px, calc(env(safe-area-inset-top) + 16px)) 22px max(22px, calc(env(safe-area-inset-bottom) + 16px)); gap: 24px; }
+  .signin-login-card { padding: 28px 22px; }
   .invite-card { grid-template-columns: 1fr; }
   .access-row { grid-template-columns: 1fr auto; }
   .access-row time { display: none; }
