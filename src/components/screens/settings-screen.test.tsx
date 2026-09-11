@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   signOut: vi.fn(async () => undefined),
   syncNow: vi.fn(),
   refresh: vi.fn(),
+  fetch: vi.fn(),
 }));
 
 vi.mock("@/features/workouts/workout-store", () => ({
@@ -33,6 +34,13 @@ describe("SettingsScreen account controls", () => {
     mocks.syncNow.mockClear();
     mocks.syncNow.mockResolvedValue({ status: "synced", pendingChanges: 0 });
     mocks.refresh.mockClear();
+    mocks.fetch.mockReset();
+    mocks.fetch.mockResolvedValue(Response.json([
+      { id: "builtin", name: "Push-Up", muscleGroup: "Chest", equipment: "Bodyweight", builtin: true, retiredAt: null },
+      { id: "custom", name: "Member Exercise", muscleGroup: "Lats", equipment: "Dumbbells", builtin: false, retiredAt: null },
+      { id: "retired", name: "Retired Exercise", muscleGroup: "Abs", equipment: "Bodyweight", builtin: false, retiredAt: "2026-01-01T00:00:00.000Z" },
+    ]));
+    vi.stubGlobal("fetch", mocks.fetch);
   });
 
   afterEach(cleanup);
@@ -66,5 +74,26 @@ describe("SettingsScreen account controls", () => {
     expect((await screen.findByRole("alert")).textContent).toContain("1 local change could not sync");
     expect(mocks.signOut).not.toHaveBeenCalled();
     expect(mocks.clearLocalData).not.toHaveBeenCalled();
+  });
+
+  it("opens the complete shared library from owner tools", async () => {
+    render(<SettingsScreen isAdmin canDeleteAccount syncEnabled onAdmin={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Edit Exercise Library" }));
+
+    expect(await screen.findByRole("dialog", { name: "Edit Exercise Library" })).toBeTruthy();
+    expect(await screen.findByText("Push-Up")).toBeTruthy();
+    expect(screen.getByText("Retired Exercise")).toBeTruthy();
+  });
+
+  it("limits the fix library queue to active custom exercises", async () => {
+    render(<SettingsScreen isAdmin canDeleteAccount syncEnabled onAdmin={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Fix Exercise Library" }));
+
+    expect(await screen.findByRole("dialog", { name: "Fix Exercise Library" })).toBeTruthy();
+    expect(await screen.findByText("Member Exercise")).toBeTruthy();
+    expect(screen.queryByText("Push-Up")).toBeNull();
+    expect(screen.queryByText("Retired Exercise")).toBeNull();
   });
 });

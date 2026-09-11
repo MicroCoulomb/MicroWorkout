@@ -286,10 +286,15 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 .settings-card h2, .danger-zone h2 { margin: 16px 0; font-size: 2.4rem; }
 .settings-card > svg { margin-bottom: 20px; color: var(--orange); }
 .settings-card p, .danger-zone p { color: var(--muted); line-height: 1.6; font-size: .84rem; }
-.shared-exercise-admin { padding: 24px; grid-column: 1/-1; }
-.shared-exercise-admin h2 { margin: 16px 0; font-size: 2.4rem; }
-.shared-exercise-admin > p { margin: 0 0 16px; color: var(--muted); font-size: .84rem; line-height: 1.5; }
-.shared-exercise-list { display: grid; gap: 7px; max-height: 310px; margin-top: 10px; overflow: auto; }
+.owner-tools { grid-column: 1/-1; }
+.owner-tools h2 { margin: 14px 0 8px; font-size: 2.4rem; }
+.owner-tools > p, .exercise-library-copy { margin: 0; color: var(--muted); font-size: .84rem; line-height: 1.5; }
+.owner-tool-actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 18px; }
+.owner-tool-actions .button-secondary { background: #202024; }
+.exercise-library-dialog { width: min(100%, 700px); }
+.exercise-library-dialog h2 { margin-top: 6px; }
+.exercise-library-dialog .search-field { margin-top: 18px; }
+.shared-exercise-list { display: grid; gap: 7px; max-height: 420px; margin-top: 10px; overflow: auto; }
 .shared-exercise-list > div { min-height: 56px; padding: 8px 9px 8px 13px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid #343438; border-radius: 14px; background: #202024; }
 .shared-exercise-list span, .shared-exercise-list small { display: block; }
 .shared-exercise-list small { margin-top: 3px; color: var(--muted); font-size: .7rem; }
@@ -297,6 +302,8 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 .shared-exercise-actions { display: flex; gap: 7px; }
 .shared-exercise-actions .button-secondary, .shared-exercise-actions .button-danger { min-height: 38px; padding: 0 12px; }
 .exercise-editor-dialog { width: min(100%, 540px); }
+.exercise-library-empty { margin-top: 20px; padding: 24px; display: grid; place-items: center; gap: 8px; border: 1px dashed #3b3b40; border-radius: 16px; color: var(--muted); text-align: center; }
+.exercise-library-empty p { margin: 0; font-size: .83rem; }
 .install-card { background: linear-gradient(145deg, rgba(255,90,31,.18), #171719 55%); }
 .install-card .button-primary { width: 100%; margin-top: 20px; }
 .danger-zone { grid-column: 1/-1; display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
