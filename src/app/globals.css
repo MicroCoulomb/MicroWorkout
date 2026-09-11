@@ -300,7 +300,9 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 .shared-exercise-list small { margin-top: 3px; color: var(--muted); font-size: .7rem; }
 .shared-exercise-list .button-danger { min-height: 38px; padding: 0 12px; }
 .shared-exercise-actions { display: flex; gap: 7px; }
-.shared-exercise-actions .button-secondary, .shared-exercise-actions .button-danger { min-height: 38px; padding: 0 12px; }
+.icon-action { width: 38px; height: 38px; display: grid; place-items: center; border: 1px solid #3b3b40; border-radius: 11px; color: var(--muted); background: #1a1a1d; cursor: pointer; }
+.icon-action:hover { color: var(--paper); border-color: rgba(255,122,47,.55); background: rgba(255,90,31,.12); }
+.icon-action-danger:hover { color: #ff9c91; border-color: rgba(232,58,39,.55); background: rgba(232,58,39,.12); }
 .exercise-editor-dialog { width: min(100%, 540px); }
 .exercise-library-empty { margin-top: 20px; padding: 24px; display: grid; place-items: center; gap: 8px; border: 1px dashed #3b3b40; border-radius: 16px; color: var(--muted); text-align: center; }
 .exercise-library-empty p { margin: 0; font-size: .83rem; }

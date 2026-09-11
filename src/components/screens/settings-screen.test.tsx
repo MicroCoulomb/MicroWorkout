@@ -84,6 +84,7 @@ describe("SettingsScreen account controls", () => {
     expect(await screen.findByRole("dialog", { name: "Edit Exercise Library" })).toBeTruthy();
     expect(await screen.findByText("Push-Up")).toBeTruthy();
     expect(screen.getByText("Retired Exercise")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Delete Push-Up" })).toBeTruthy();
   });
 
   it("limits the fix library queue to active custom exercises", async () => {

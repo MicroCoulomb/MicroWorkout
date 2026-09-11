@@ -41,7 +41,7 @@ export async function DELETE(request: Request) {
   if (typeof parsed?.id !== "string") return Response.json({ error: "Exercise id required" }, { status: 400 });
   const { exercises } = await import("@/server/db/schema");
   const [exercise] = await context.db.select().from(exercises).where(eq(exercises.id, parsed.id)).limit(1);
-  if (!exercise || exercise.builtin) return Response.json({ error: "Shared custom exercise not found" }, { status: 404 });
+  if (!exercise) return Response.json({ error: "Exercise not found" }, { status: 404 });
   await context.db.update(exercises).set({ retiredAt: new Date(), updatedAt: new Date() }).where(eq(exercises.id, exercise.id));
   return Response.json({ id: exercise.id, retiredAt: Date.now() });
 }
