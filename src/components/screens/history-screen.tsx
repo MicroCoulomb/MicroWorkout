@@ -1,7 +1,7 @@
 "use client";
 
 import { CalendarDays, CalendarX, ChevronDown, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
-import { useRef, useState, type PointerEvent } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
 import { displayWeight, useWorkoutStore } from "@/features/workouts/workout-store";
 import { formatDuration, sessionTotals } from "@/domain/metrics";
 import type { WorkoutSession } from "@/domain/types";
@@ -18,6 +18,16 @@ export function HistoryScreen() {
   const completed = store.sessions.filter(isCompleted);
   const visible = selectedDay ? completed.filter((session) => sessionDay(session) === selectedDay) : completed;
 
+  useEffect(() => {
+    if (!revealed) return;
+    const closeOutsideRecord = (event: globalThis.PointerEvent) => {
+      const record = event.target instanceof Element ? event.target.closest("[data-history-record]") : null;
+      if (record?.getAttribute("data-history-record") !== revealed) setRevealed(undefined);
+    };
+    document.addEventListener("pointerdown", closeOutsideRecord);
+    return () => document.removeEventListener("pointerdown", closeOutsideRecord);
+  }, [revealed]);
+
   function changeMonth(delta: number) {
     setMonth((current) => new Date(current.getFullYear(), current.getMonth() + delta, 1));
     setSelectedDay(undefined);
@@ -25,24 +35,26 @@ export function HistoryScreen() {
     setRevealed(undefined);
   }
 
-  return <>
+  return <section className="history-screen">
     <header className="page-header"><div><h1 className="page-title">Workout history</h1></div></header>
     <HistoryCalendar month={month} sessions={completed} selectedDay={selectedDay} onPrevious={() => changeMonth(-1)} onNext={() => changeMonth(1)} onSelect={(day) => { setSelectedDay((current) => current === day ? undefined : day); setOpen(undefined); setRevealed(undefined); }} />
-    {completed.length === 0 ? <div className="empty-state card"><CalendarX size={42} /><h2 className="display">Nothing logged yet.</h2><p>Complete a workout and its read-only report will appear here.</p></div>
+    <div className="history-records">
+      {completed.length === 0 ? <div className="empty-state card"><CalendarX size={42} /><h2 className="display">Nothing logged yet.</h2><p>Complete a workout and its read-only report will appear here.</p></div>
       : visible.length === 0 ? <div className="empty-state card history-filter-empty"><CalendarDays size={42} /><h2 className="display">No workouts this day.</h2><p>Select the date again to see all completed workouts.</p></div>
         : <section className="history-list" aria-label={selectedDay ? `Workout records for ${selectedDay}` : "All workout records"}>{visible.map((session) => <HistoryItem key={session.id} session={session} open={open === session.id} revealed={revealed === session.id} dragOffset={drag?.id === session.id ? drag.offset : undefined} onToggle={() => setOpen(open === session.id ? undefined : session.id)} onReveal={() => setRevealed(session.id)} onClose={() => setRevealed(undefined)} onDrag={(offset) => setDrag({ id: session.id, offset })} onDragEnd={() => setDrag(undefined)} onDelete={() => void store.deleteWorkoutRecord(session.id)} />)}</section>}
-  </>;
+    </div>
+  </section>;
 }
 
 function HistoryCalendar({ month, sessions, selectedDay, onPrevious, onNext, onSelect }: { month: Date; sessions: WorkoutSession[]; selectedDay?: string; onPrevious(): void; onNext(): void; onSelect(day: string): void }) {
   const workoutDays = new Set(sessions.map(sessionDay));
   const today = dayKey(new Date());
-  const days = calendarDays(month);
+  const calendar = calendarDays(month);
   const monthLabel = month.toLocaleDateString(undefined, { month: "long", year: "numeric" });
   return <section className="history-calendar card" aria-label="Workout calendar">
     <div className="history-calendar-header"><button className="calendar-nav" aria-label="Previous month" onClick={onPrevious}><ChevronLeft size={18} /></button><h2 className="display">{monthLabel}</h2><button className="calendar-nav" aria-label="Next month" onClick={onNext}><ChevronRight size={18} /></button></div>
     <div className="calendar-weekdays" aria-hidden="true">{["M", "T", "W", "T", "F", "S", "S"].map((day, index) => <span key={`${day}-${index}`}>{day}</span>)}</div>
-    <div className="calendar-grid">{days.map((day, index) => day ? <button key={day.key} className="calendar-day" data-workout={workoutDays.has(day.key)} data-today={day.key === today} data-selected={day.key === selectedDay} aria-pressed={day.key === selectedDay} aria-label={`${day.date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" })}${workoutDays.has(day.key) ? ", workout recorded" : ""}`} onClick={() => onSelect(day.key)}><span>{day.date.getDate()}</span></button> : <span className="calendar-blank" key={`blank-${index}`} />)}</div>
+    <div className="calendar-grid" style={{ "--calendar-rows": calendar.rows } as CSSProperties}>{calendar.days.map((day, index) => day ? <button key={day.key} className="calendar-day" data-workout={workoutDays.has(day.key)} data-today={day.key === today} data-selected={day.key === selectedDay} aria-pressed={day.key === selectedDay} aria-label={`${day.date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" })}${workoutDays.has(day.key) ? ", workout recorded" : ""}`} onClick={() => onSelect(day.key)}><span>{day.date.getDate()}</span></button> : <span className="calendar-blank" key={`blank-${index}`} />)}</div>
   </section>;
 }
 
@@ -83,7 +95,7 @@ function HistoryItem({ session, open, revealed, dragOffset, onToggle, onReveal, 
     onDragEnd();
   }
 
-  return <div className="history-swipe-row">
+  return <div className="history-swipe-row" data-history-record={session.id}>
     <button className="history-delete" aria-label={`Delete ${session.planName} workout record`} aria-hidden={!revealed} tabIndex={revealed ? 0 : -1} onClick={onDelete}><Trash2 size={21} /></button>
     <article className="history-card card" data-dragging={dragOffset !== undefined} style={{ transform: `translateX(${offset}px)` }} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerEnd} onPointerCancel={pointerEnd}>
       <button className="history-head" aria-expanded={open} onClick={() => { if (ignoreClick.current) { ignoreClick.current = false; return; } if (revealed) { onClose(); return; } onToggle(); }}><time dateTime={new Date(session.endedAt ?? session.startedAt).toISOString()}>{new Date(session.endedAt ?? session.startedAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}</time><div><h2 className="display">{session.planName}</h2><p>{totals.exercises} exercise{totals.exercises === 1 ? "" : "s"} · {formatDuration(totals.activeMs)} active</p></div><ChevronDown data-open={open} /></button>
@@ -112,10 +124,13 @@ function calendarDays(month: Date) {
   const firstWeekday = (month.getDay() + 6) % 7;
   const count = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
   const cells = Math.ceil((firstWeekday + count) / 7) * 7;
-  return Array.from({ length: cells }, (_, index) => {
+  return {
+    rows: cells / 7,
+    days: Array.from({ length: cells }, (_, index) => {
     const day = index - firstWeekday + 1;
     if (day < 1 || day > count) return undefined;
     const date = new Date(month.getFullYear(), month.getMonth(), day);
     return { date, key: dayKey(date) };
-  });
+    }),
+  };
 }

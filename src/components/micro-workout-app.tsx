@@ -54,7 +54,7 @@ function AppContent({ isAdmin, canDeleteAccount, syncEnabled }: { isAdmin: boole
   const showLauncher = view === "home" || view === "plans" || view === "history";
 
   return (
-    <main className="app-frame">
+    <main className={`app-frame${view === "history" ? " app-frame-history" : ""}`}>
       {view === "home" && <Dashboard onNavigate={setView} onResume={() => activeSession && setWorkoutId(activeSession.id)} />}
       {view === "plans" && <PlansScreen />}
       {view === "history" && <HistoryScreen />}

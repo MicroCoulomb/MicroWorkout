@@ -51,10 +51,24 @@ beforeEach(() => {
 });
 
 describe("HistoryScreen", () => {
+  it("fills its fixed calendar height with the displayed month's week rows", () => {
+    store.sessions = [session("push", workoutDay)];
+    const { container } = render(<HistoryScreen />);
+    const grid = container.querySelector(".calendar-grid") as HTMLElement;
+
+    expect(grid.style.getPropertyValue("--calendar-rows")).toBe("5");
+    fireEvent.click(screen.getByRole("button", { name: "Previous month" }));
+    expect(grid.style.getPropertyValue("--calendar-rows")).toBe("6");
+
+    for (let index = 0; index < 6; index += 1) fireEvent.click(screen.getByRole("button", { name: "Next month" }));
+    expect(grid.style.getPropertyValue("--calendar-rows")).toBe("4");
+  });
+
   it("shows exercise count and active time, then filters records by selected calendar day", () => {
     store.sessions = [session("push", workoutDay), session("pull", otherDay)];
     render(<HistoryScreen />);
 
+    expect(screen.getByRole("region", { name: "All workout records" }).parentElement?.className).toBe("history-records");
     expect(screen.getAllByText("1 exercise · 08:00 active")).toHaveLength(2);
     const calendarDay = screen.getByRole("button", { name: /Saturday, September 12, 2026, workout recorded/ });
     expect(calendarDay.querySelector("i")).toBeNull();
@@ -81,6 +95,14 @@ describe("HistoryScreen", () => {
     fireEvent.pointerDown(card, { pointerId: 1, clientX: 180, clientY: 0 });
     fireEvent.pointerMove(card, { pointerId: 1, clientX: 70, clientY: 0 });
     fireEvent.pointerUp(card, { pointerId: 1, clientX: 70, clientY: 0 });
+    expect(card.style.transform).toBe("translateX(-88px)");
+
+    fireEvent.pointerDown(document.body);
+    expect(card.style.transform).toBe("translateX(0px)");
+
+    fireEvent.pointerDown(card, { pointerId: 2, clientX: 180, clientY: 0 });
+    fireEvent.pointerMove(card, { pointerId: 2, clientX: 70, clientY: 0 });
+    fireEvent.pointerUp(card, { pointerId: 2, clientX: 70, clientY: 0 });
     expect(card.style.transform).toBe("translateX(-88px)");
 
     fireEvent.click(screen.getByRole("button", { name: "Delete Push day workout record" }));
