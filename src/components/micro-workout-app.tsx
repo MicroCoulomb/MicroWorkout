@@ -14,18 +14,18 @@ import type { UserProfile, WorkoutPlan } from "@/domain/types";
 
 export type AppView = "home" | "plans" | "history" | "settings" | "admin";
 
-export function MicroWorkoutApp({ userId = "demo", userName = "Athlete", syncEnabled = false, isAdmin = false, canDeleteAccount = true, initialProfile }: { userId?: string; userName?: string; syncEnabled?: boolean; isAdmin?: boolean; canDeleteAccount?: boolean; initialProfile?: UserProfile }) {
+export function MicroWorkoutApp({ userId = "demo", userName = "Athlete", syncEnabled = false, isAdmin = false, initialProfile }: { userId?: string; userName?: string; syncEnabled?: boolean; isAdmin?: boolean; initialProfile?: UserProfile }) {
   useEffect(() => {
     if (syncEnabled && navigator.onLine) window.localStorage.setItem("microworkout-last-user", JSON.stringify({ id: userId, name: userName, verifiedAt: Date.now() }));
   }, [syncEnabled, userId, userName]);
   return (
     <WorkoutStoreProvider userId={userId} userName={userName} syncEnabled={syncEnabled} initialProfile={initialProfile}>
-      <AppContent isAdmin={isAdmin} canDeleteAccount={canDeleteAccount} syncEnabled={syncEnabled} />
+      <AppContent isAdmin={isAdmin} />
     </WorkoutStoreProvider>
   );
 }
 
-function AppContent({ isAdmin, canDeleteAccount, syncEnabled }: { isAdmin: boolean; canDeleteAccount: boolean; syncEnabled: boolean }) {
+function AppContent({ isAdmin }: { isAdmin: boolean }) {
   const [view, setView] = useState<AppView>("home");
   const [workoutId, setWorkoutId] = useState<string>();
   const [pendingPlan, setPendingPlan] = useState<WorkoutPlan>();
@@ -58,7 +58,7 @@ function AppContent({ isAdmin, canDeleteAccount, syncEnabled }: { isAdmin: boole
       {view === "home" && <Dashboard onNavigate={setView} onResume={() => activeSession && setWorkoutId(activeSession.id)} />}
       {view === "plans" && <PlansScreen />}
       {view === "history" && <HistoryScreen />}
-      {view === "settings" && <SettingsScreen isAdmin={isAdmin} canDeleteAccount={canDeleteAccount} syncEnabled={syncEnabled} onAdmin={() => setView("admin")} />}
+      {view === "settings" && <SettingsScreen isAdmin={isAdmin} onAdmin={() => setView("admin")} />}
       {view === "admin" && <AdminScreen onBack={() => setView("settings")} />}
       {showLauncher && <WorkoutLauncher active={Boolean(activeSession)} onResume={() => activeSession && setWorkoutId(activeSession.id)} onSelect={setPendingPlan} />}
       <nav className="bottom-nav" aria-label="Primary navigation">

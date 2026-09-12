@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AdminScreen } from "./admin-screen";
 
@@ -34,10 +34,13 @@ describe("AdminScreen", () => {
     expect(mocks.onBack).toHaveBeenCalledOnce();
   });
 
-  it("refreshes members after revoking access", async () => {
+  it("requires confirmation before revoking access", async () => {
     render(<AdminScreen onBack={mocks.onBack} />);
 
     fireEvent.click(await screen.findByRole("button", { name: "Revoke very-long-member-address-that-must-not-overlap-actions@example.com" }));
+    expect(screen.getByRole("alertdialog", { name: "Revoke member?" })).toBeTruthy();
+    expect(mocks.fetch).toHaveBeenCalledOnce();
+    fireEvent.click(within(screen.getByRole("alertdialog")).getByRole("button", { name: "Revoke" }));
     await waitFor(() => expect(mocks.fetch).toHaveBeenCalledTimes(2));
   });
 });

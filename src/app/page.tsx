@@ -27,6 +27,5 @@ export default async function Home() {
     lastVerifiedAt: storedProfile.updatedAt.getTime(),
   } : undefined;
   const role = "role" in session.user ? session.user.role : "user";
-  const isOwner = session.user.email.toLowerCase() === process.env.OWNER_EMAIL?.trim().toLowerCase();
-  return <MicroWorkoutApp userId={session.user.id} userName={session.user.name} initialProfile={initialProfile} syncEnabled isAdmin={role === "admin"} canDeleteAccount={!isOwner} />;
+  return <MicroWorkoutApp userId={session.user.id} userName={session.user.name} initialProfile={initialProfile} syncEnabled isAdmin={role === "admin"} />;
 }

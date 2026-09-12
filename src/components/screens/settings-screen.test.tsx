@@ -7,6 +7,7 @@ import { SettingsScreen } from "./settings-screen";
 const mocks = vi.hoisted(() => ({
   clearLocalData: vi.fn(async () => undefined),
   signOut: vi.fn(async () => undefined),
+  updateProfile: vi.fn(async () => undefined),
   syncNow: vi.fn(),
   refresh: vi.fn(),
   fetch: vi.fn(),
@@ -16,7 +17,7 @@ vi.mock("@/features/workouts/workout-store", () => ({
   useWorkoutStore: () => ({
     profile: { id: "profile", name: "Athlete", weeklyGoal: 4, weightUnit: "kg", timezone: "Asia/Manila", lastVerifiedAt: Date.now() },
     pendingChanges: 0,
-    updateProfile: vi.fn(async () => undefined),
+    updateProfile: mocks.updateProfile,
     clearLocalData: mocks.clearLocalData,
     syncNow: mocks.syncNow,
     syncStatus: "synced",
@@ -31,6 +32,7 @@ describe("SettingsScreen account controls", () => {
   beforeEach(() => {
     mocks.clearLocalData.mockClear();
     mocks.signOut.mockClear();
+    mocks.updateProfile.mockClear();
     mocks.syncNow.mockClear();
     mocks.syncNow.mockResolvedValue({ status: "synced", pendingChanges: 0 });
     mocks.refresh.mockClear();
@@ -46,7 +48,7 @@ describe("SettingsScreen account controls", () => {
   afterEach(cleanup);
 
   it("keeps the local database when signing out", async () => {
-    render(<SettingsScreen isAdmin={false} canDeleteAccount syncEnabled onAdmin={vi.fn()} />);
+    render(<SettingsScreen isAdmin={false} onAdmin={vi.fn()} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Sign Out" }));
     expect(screen.getByRole("alertdialog", { name: "Sign out?" })).toBeTruthy();
@@ -59,7 +61,7 @@ describe("SettingsScreen account controls", () => {
   });
 
   it("clears the local database only through the explicit device action", async () => {
-    render(<SettingsScreen isAdmin={false} canDeleteAccount syncEnabled onAdmin={vi.fn()} />);
+    render(<SettingsScreen isAdmin={false} onAdmin={vi.fn()} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Clear Records" }));
     fireEvent.click(within(screen.getByRole("alertdialog")).getByRole("button", { name: "Clear Records" }));
@@ -70,7 +72,7 @@ describe("SettingsScreen account controls", () => {
 
   it("blocks sign out when local changes could not be synchronized", async () => {
     mocks.syncNow.mockResolvedValueOnce({ status: "error", pendingChanges: 1 });
-    render(<SettingsScreen isAdmin={false} canDeleteAccount syncEnabled onAdmin={vi.fn()} />);
+    render(<SettingsScreen isAdmin={false} onAdmin={vi.fn()} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Sign Out" }));
     fireEvent.click(within(screen.getByRole("alertdialog")).getByRole("button", { name: "Sign Out" }));
@@ -81,7 +83,7 @@ describe("SettingsScreen account controls", () => {
   });
 
   it("uses the compact profile labels and shared sync control", () => {
-    render(<SettingsScreen isAdmin={false} canDeleteAccount syncEnabled onAdmin={vi.fn()} />);
+    render(<SettingsScreen isAdmin={false} onAdmin={vi.fn()} />);
 
     expect(screen.queryByText("Training defaults")).toBeNull();
     expect(screen.getByLabelText("Weekly Goal")).toBeTruthy();
@@ -91,7 +93,7 @@ describe("SettingsScreen account controls", () => {
   });
 
   it("opens the complete shared library from owner tools", async () => {
-    render(<SettingsScreen isAdmin canDeleteAccount syncEnabled onAdmin={vi.fn()} />);
+    render(<SettingsScreen isAdmin onAdmin={vi.fn()} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Edit Exercise Library" }));
 
@@ -102,7 +104,7 @@ describe("SettingsScreen account controls", () => {
   });
 
   it("limits the fix library queue to active custom exercises", async () => {
-    render(<SettingsScreen isAdmin canDeleteAccount syncEnabled onAdmin={vi.fn()} />);
+    render(<SettingsScreen isAdmin onAdmin={vi.fn()} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Fix Exercise Library" }));
 
@@ -110,5 +112,18 @@ describe("SettingsScreen account controls", () => {
     expect(await screen.findByText("Member Exercise")).toBeTruthy();
     expect(screen.queryByText("Push-Up")).toBeNull();
     expect(screen.queryByText("Retired Exercise")).toBeNull();
+  });
+
+  it("enables Save Settings only when profile data changes", async () => {
+    render(<SettingsScreen isAdmin={false} onAdmin={vi.fn()} />);
+
+    const save = screen.getByRole("button", { name: "Save settings" });
+    expect((save as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.change(screen.getByLabelText("Display name"), { target: { value: "Changed Athlete" } });
+    expect((save as HTMLButtonElement).disabled).toBe(false);
+    fireEvent.click(save);
+
+    await waitFor(() => expect(mocks.updateProfile).toHaveBeenCalledWith({ name: "Changed Athlete", weeklyGoal: 4, weightUnit: "kg" }));
+    expect((save as HTMLButtonElement).disabled).toBe(true);
   });
 });

@@ -86,10 +86,13 @@ describe("HistoryScreen", () => {
     expect(screen.getAllByText("1 exercise · 08:00 active")).toHaveLength(2);
     const calendarDay = screen.getByRole("button", { name: /Saturday, September 12, 2026, workout recorded/ });
     expect(calendarDay.querySelector("i")).toBeNull();
+    expect(calendarDay.getAttribute("data-today")).toBe("true");
+    expect(calendarDay.getAttribute("data-selected")).toBe("false");
     fireEvent.click(calendarDay);
 
     expect(screen.getByText("Push day")).toBeTruthy();
     expect(screen.queryByText("Pull day")).toBeNull();
+    expect(calendarDay.getAttribute("data-selected")).toBe("true");
     fireEvent.click(calendarDay);
     expect(calendarDay.getAttribute("aria-pressed")).toBe("false");
     expect(screen.getByText("Pull day")).toBeTruthy();
