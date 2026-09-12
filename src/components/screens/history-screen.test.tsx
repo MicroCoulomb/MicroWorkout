@@ -51,6 +51,20 @@ beforeEach(() => {
 });
 
 describe("HistoryScreen", () => {
+  it("hides and restores the calendar without changing the record list", () => {
+    store.sessions = [session("push", workoutDay)];
+    render(<HistoryScreen />);
+
+    expect(screen.getByRole("region", { name: "Workout calendar" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Hide calendar" }));
+    expect(screen.queryByRole("region", { name: "Workout calendar" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Show calendar" }).getAttribute("aria-pressed")).toBe("false");
+    expect(screen.getByText("Push day")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Show calendar" }));
+    expect(screen.getByRole("region", { name: "Workout calendar" })).toBeTruthy();
+  });
+
   it("fills its fixed calendar height with the displayed month's week rows", () => {
     store.sessions = [session("push", workoutDay)];
     const { container } = render(<HistoryScreen />);

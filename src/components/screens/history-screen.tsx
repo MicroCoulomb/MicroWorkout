@@ -13,6 +13,7 @@ export function HistoryScreen() {
   const [open, setOpen] = useState<string>();
   const [selectedDay, setSelectedDay] = useState<string>();
   const [month, setMonth] = useState(startOfMonth(new Date()));
+  const [calendarVisible, setCalendarVisible] = useState(true);
   const [revealed, setRevealed] = useState<string>();
   const [drag, setDrag] = useState<{ id: string; offset: number }>();
   const completed = store.sessions.filter(isCompleted);
@@ -36,8 +37,8 @@ export function HistoryScreen() {
   }
 
   return <section className="history-screen">
-    <header className="page-header"><div><h1 className="page-title">Workout history</h1></div></header>
-    <HistoryCalendar month={month} sessions={completed} selectedDay={selectedDay} onPrevious={() => changeMonth(-1)} onNext={() => changeMonth(1)} onSelect={(day) => { setSelectedDay((current) => current === day ? undefined : day); setOpen(undefined); setRevealed(undefined); }} />
+    <header className="page-header"><div><h1 className="page-title">Workout history</h1></div><button className="calendar-toggle" aria-label={calendarVisible ? "Hide calendar" : "Show calendar"} aria-pressed={calendarVisible} onClick={() => setCalendarVisible((visible) => !visible)}><CalendarDays size={18} /></button></header>
+    {calendarVisible && <HistoryCalendar month={month} sessions={completed} selectedDay={selectedDay} onPrevious={() => changeMonth(-1)} onNext={() => changeMonth(1)} onSelect={(day) => { setSelectedDay((current) => current === day ? undefined : day); setOpen(undefined); setRevealed(undefined); }} />}
     <div className="history-records">
       {completed.length === 0 ? <div className="empty-state card"><CalendarX size={42} /><h2 className="display">Nothing logged yet.</h2><p>Complete a workout and its read-only report will appear here.</p></div>
       : visible.length === 0 ? <div className="empty-state card history-filter-empty"><CalendarDays size={42} /><h2 className="display">No workouts this day.</h2><p>Select the date again to see all completed workouts.</p></div>
