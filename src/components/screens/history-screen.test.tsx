@@ -56,10 +56,15 @@ describe("HistoryScreen", () => {
     render(<HistoryScreen />);
 
     expect(screen.getAllByText("1 exercise · 08:00 active")).toHaveLength(2);
-    fireEvent.click(screen.getByRole("button", { name: /Saturday, September 12, 2026, workout recorded/ }));
+    const calendarDay = screen.getByRole("button", { name: /Saturday, September 12, 2026, workout recorded/ });
+    expect(calendarDay.querySelector("i")).toBeNull();
+    fireEvent.click(calendarDay);
 
     expect(screen.getByText("Push day")).toBeTruthy();
     expect(screen.queryByText("Pull day")).toBeNull();
+    fireEvent.click(calendarDay);
+    expect(calendarDay.getAttribute("aria-pressed")).toBe("false");
+    expect(screen.getByText("Pull day")).toBeTruthy();
   });
 
   it("keeps each expanded set together and reveals deletion after a left swipe", () => {
