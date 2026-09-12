@@ -127,27 +127,29 @@ export function WorkoutScreen({ session, onClose }: { session: WorkoutSession; o
         <button className="icon-button" onClick={() => void togglePause()} aria-label={session.status === "paused" ? "Resume workout" : "Pause workout"}>{session.status === "paused" ? <Play fill="currentColor" /> : <Pause fill="currentColor" />}</button>
       </header>
 
-      <section className="exercise-stage">
-        <div className="progress-track"><span style={{ width: String(((session.currentExerciseIndex + 1) / session.exercises.length) * 100) + "%" }} /></div>
-        <div className="exercise-counter display">{String(session.currentExerciseIndex + 1).padStart(2, "0")}<small>/{String(session.exercises.length).padStart(2, "0")}</small></div>
-        <span className="eyebrow">{current.muscleGroup} · {current.equipment}</span>
-        <h1 className="display">{current.name}</h1>
-        <p className="muted">Set {current.sets.length + 1}. Keep the movement clean.</p>
-      </section>
-
-      {session.status === "paused" ? <section className="pause-panel card"><Pause size={28} /><span className="eyebrow">Timer paused</span><h2 className="display">Take the time you need.</h2><button className="button-primary" onClick={() => void togglePause()}><Play fill="currentColor" /> Resume workout</button></section>
-        : session.rest ? <section className="rest-panel">
-          <div className="rest-orb" style={{ "--rest-progress": restProgress } as CSSProperties}><span className="eyebrow">Rest interval</span><div className="rest-time display">{formatDuration(remainingRestMs)}</div><p>Next: {current.name}</p></div>
-          <button className="add-time" onClick={() => void extendRest()}><Plus size={17} /> +10s</button>
-          <div className="rest-actions"><button className="button-secondary" onClick={() => void resolveRest("skip")}><RotateCcw size={18} /> Skip rest</button><button className="button-primary" onClick={() => void finishExercise()}>Finish exercise</button></div>
+      <div className="workout-scroll">
+        <section className="exercise-stage">
+          <div className="progress-track"><span style={{ width: String(((session.currentExerciseIndex + 1) / session.exercises.length) * 100) + "%" }} /></div>
+          <div className="exercise-counter display">{String(session.currentExerciseIndex + 1).padStart(2, "0")}<small>/{String(session.exercises.length).padStart(2, "0")}</small></div>
+          <span className="eyebrow">{current.muscleGroup} · {current.equipment}</span>
+          <h1 className="display">{current.name}</h1>
+          <p className="muted">Set {current.sets.length + 1}. Keep the movement clean.</p>
         </section>
-        : <section className="set-entry card"><div className="set-inputs"><label><span>Reps</span><input inputMode="numeric" type="number" min="1" value={reps} onChange={(event) => setReps(event.target.value)} placeholder="12" /></label><label><span>Weight <small>{unit}</small></span><input inputMode="decimal" type="number" min="0" step="0.25" value={weight} onChange={(event) => setWeight(event.target.value)} placeholder="Optional" /></label></div><button className="set-finished" disabled={!Number.isInteger(Number(reps)) || Number(reps) < 1} onClick={() => void logSet()}>Set finished</button><button className="text-button finish-exercise" onClick={() => void finishExercise()}>{current.sets.length ? "Finish exercise" : "Skip exercise"}</button></section>}
 
-      <section className="live-log">
-        <div className="row-between"><span className="eyebrow">Session log</span><button className="danger-link" onClick={() => setConfirmation({ title: "Discard workout?", message: "This active workout and its logged sets will be removed.", confirmLabel: "Discard workout", action: async () => { await store.discardSession(session.id); onClose(); } })}><Trash2 size={15} /> Discard</button></div>
-        {session.exercises.filter((exercise) => exercise.sets.length > 0).map((exercise) => <div className="log-exercise" key={exercise.id}><strong>{exercise.name}</strong>{exercise.sets.map((set, index) => <div className="log-set" key={set.id}><span>Set {index + 1}</span><b>{formatSet(set, unit)}</b><div className="log-actions"><button className="log-action" onClick={() => setEditingSet(set)} aria-label={"Edit set " + String(index + 1)}><Pencil size={15} /></button><button className="log-action log-action-danger" onClick={() => deleteSet(set)} aria-label={"Delete set " + String(index + 1)}><Trash2 size={15} /></button></div></div>)}</div>)}
-        {session.exercises.some((exercise) => exercise.sets.length) && <button className="button-danger early-finish" onClick={finishEarly}>End workout early</button>}
-      </section>
+        {session.status === "paused" ? <section className="pause-panel card"><Pause size={28} /><span className="eyebrow">Timer paused</span><h2 className="display">Take the time you need.</h2><button className="button-primary" onClick={() => void togglePause()}><Play fill="currentColor" /> Resume workout</button></section>
+          : session.rest ? <section className="rest-panel">
+            <div className="rest-orb" style={{ "--rest-progress": restProgress } as CSSProperties}><span className="eyebrow">Rest interval</span><div className="rest-time display">{formatDuration(remainingRestMs)}</div><p>Next: {current.name}</p></div>
+            <button className="add-time" onClick={() => void extendRest()}><Plus size={17} /> +10s</button>
+            <div className="rest-actions"><button className="button-secondary" onClick={() => void resolveRest("skip")}><RotateCcw size={18} /> Skip rest</button><button className="button-primary" onClick={() => void finishExercise()}>Finish exercise</button></div>
+          </section>
+          : <section className="set-entry card"><div className="set-inputs"><label><span>Reps</span><input inputMode="numeric" type="number" min="1" value={reps} onChange={(event) => setReps(event.target.value)} placeholder="12" /></label><label><span>Weight <small>{unit}</small></span><input inputMode="decimal" type="number" min="0" step="0.25" value={weight} onChange={(event) => setWeight(event.target.value)} placeholder="Optional" /></label></div><button className="set-finished" disabled={!Number.isInteger(Number(reps)) || Number(reps) < 1} onClick={() => void logSet()}>Set finished</button><button className="text-button finish-exercise" onClick={() => void finishExercise()}>{current.sets.length ? "Finish exercise" : "Skip exercise"}</button></section>}
+
+        <section className="live-log">
+          <div className="row-between"><span className="eyebrow">Session log</span><button className="danger-link" onClick={() => setConfirmation({ title: "Discard workout?", message: "This active workout and its logged sets will be removed.", confirmLabel: "Discard workout", action: async () => { await store.discardSession(session.id); onClose(); } })}><Trash2 size={15} /> Discard</button></div>
+          {session.exercises.filter((exercise) => exercise.sets.length > 0).map((exercise) => <div className="log-exercise" key={exercise.id}><strong>{exercise.name}</strong>{exercise.sets.map((set, index) => <div className="log-set" key={set.id}><span>Set {index + 1}</span><b>{formatSet(set, unit)}</b><div className="log-actions"><button className="log-action" onClick={() => setEditingSet(set)} aria-label={"Edit set " + String(index + 1)}><Pencil size={15} /></button><button className="log-action log-action-danger" onClick={() => deleteSet(set)} aria-label={"Delete set " + String(index + 1)}><Trash2 size={15} /></button></div></div>)}</div>)}
+          {session.exercises.some((exercise) => exercise.sets.length) && <button className="button-danger early-finish" onClick={finishEarly}>End workout early</button>}
+        </section>
+      </div>
     </main>
     {editingSet && <SetEditorDialog set={editingSet} onClose={() => setEditingSet(undefined)} onSave={(repsValue) => void saveEditedSet(editingSet, repsValue)} />}
     {confirmation && <ConfirmDialog title={confirmation.title} message={confirmation.message} confirmLabel={confirmation.confirmLabel} tone="danger" onClose={() => setConfirmation(undefined)} onConfirm={confirmation.action} />}

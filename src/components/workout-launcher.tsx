@@ -78,17 +78,19 @@ export function WorkoutStartScreen({ plan, onBack, onStart }: { plan: WorkoutPla
       <div><span>{plan.name}</span><b className="display">00:00</b></div>
       <button className="icon-button prestart-pause" disabled aria-label="Workout has not started"><Pause fill="currentColor" /></button>
     </header>
-    <section className="exercise-stage prestart-stage">
-      <div className="progress-track"><span style={{ width: "0%" }} /></div>
-      <div className="exercise-counter display">00<small>/{String(exerciseNames.length).padStart(2, "0")}</small></div>
-      <span className="eyebrow">First up</span>
-      <h1 className="display">{exerciseNames[0] ?? "Start workout"}</h1>
-      <button className="prestart-button" disabled={starting} onClick={() => void start()} aria-label="Start workout"><Play size={58} fill="currentColor" /></button>
-    </section>
-    <section className="live-log prestart-details">
-      <span className="eyebrow">Workout details</span>
-      <div className="prestart-meta"><span>{exerciseNames.length} exercises</span><span>{plan.restSeconds}s rest between sets</span></div>
-      <ol className="prestart-exercises">{exerciseNames.map((name, index) => <li key={`${name}-${index}`}><b>{String(index + 1).padStart(2, "0")}</b><span>{name}</span></li>)}</ol>
-    </section>
+    <div className="workout-scroll">
+      <section className="exercise-stage prestart-stage">
+        <div className="progress-track"><span style={{ width: "0%" }} /></div>
+        <div className="exercise-counter display">00<small>/{String(exerciseNames.length).padStart(2, "0")}</small></div>
+        <span className="eyebrow">First up</span>
+        <h1 className="display">{exerciseNames[0] ?? "Start workout"}</h1>
+        <button className="prestart-button" disabled={starting} onClick={() => void start()} aria-label="Start workout"><Play size={58} fill="currentColor" /></button>
+      </section>
+      <section className="live-log prestart-details">
+        <span className="eyebrow">Workout details</span>
+        <div className="prestart-meta"><span>{exerciseNames.length} exercises</span><span>{plan.restSeconds}s rest between sets</span></div>
+        <ol className="prestart-exercises">{exerciseNames.map((name, index) => <li key={`${name}-${index}`}><b>{String(index + 1).padStart(2, "0")}</b><span>{name}</span></li>)}</ol>
+      </section>
+    </div>
   </main>;
 }
