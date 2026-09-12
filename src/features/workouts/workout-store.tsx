@@ -34,6 +34,7 @@ interface StoreValue {
   startWorkout(plan: WorkoutPlan): Promise<string>;
   saveSession(session: WorkoutSession): Promise<void>;
   discardSession(id: string): Promise<void>;
+  deleteWorkoutRecord(id: string): Promise<void>;
   finishWorkoutEarly(id: string): Promise<void>;
   clearLocalData(): Promise<void>;
 }
@@ -214,6 +215,15 @@ export function WorkoutStoreProvider({ children, userId, userName, syncEnabled, 
     });
   }
 
+  async function deleteWorkoutRecord(id: string) {
+    const session = await localDb.sessions.get(id);
+    if (!session || (session.status !== "completed" && session.status !== "completed_early")) return;
+    await localDb.transaction("rw", localDb.sessions, localDb.outbox, async () => {
+      await localDb.sessions.delete(id);
+      await queueMutation(localDb, { entityType: "session", entityId: id, operation: "delete" });
+    });
+  }
+
   async function finishWorkoutEarly(id: string) {
     await localDb.transaction("rw", localDb.sessions, localDb.outbox, async () => {
       const session = await localDb.sessions.get(id);
@@ -232,7 +242,7 @@ export function WorkoutStoreProvider({ children, userId, userName, syncEnabled, 
     <StoreContext.Provider value={{
       ready: Boolean(profile), exercises, plans, sessions, profile, pendingChanges, currentDeviceId, syncStatus, syncNow,
       savePlan, copyPreset, duplicatePlan, deletePlan, addExercise, updateProfile,
-      startWorkout, saveSession, discardSession, finishWorkoutEarly, clearLocalData,
+      startWorkout, saveSession, discardSession, deleteWorkoutRecord, finishWorkoutEarly, clearLocalData,
     }}>
       {children}
     </StoreContext.Provider>

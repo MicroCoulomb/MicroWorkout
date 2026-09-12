@@ -92,7 +92,6 @@ async function applyDelete(tx: Transaction, userId: string, entityType: SyncRequ
   if (entityType === "exercise") throw new Error("Shared exercises can only be retired by an administrator");
   if (entityType === "session") {
     const [session] = await tx.select({ status: workoutSessions.status, sourcePlanId: workoutSessions.sourcePlanId }).from(workoutSessions).where(and(eq(workoutSessions.id, entityId), eq(workoutSessions.userId, userId))).limit(1);
-    if (session?.status === "completed" || session?.status === "completed_early") throw new Error("Completed sessions are immutable");
     await tx.delete(workoutSessions).where(and(eq(workoutSessions.id, entityId), eq(workoutSessions.userId, userId)));
     if (session?.sourcePlanId) {
       const [remainingSession] = await tx.select({ id: workoutSessions.id }).from(workoutSessions).where(and(eq(workoutSessions.sourcePlanId, session.sourcePlanId), eq(workoutSessions.userId, userId))).limit(1);

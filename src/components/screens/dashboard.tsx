@@ -72,7 +72,7 @@ export function Dashboard({ onNavigate, onResume }: { onNavigate(view: AppView):
 function LastSession({ session }: { session: ReturnType<typeof useWorkoutStore>["sessions"][number] }) {
   const totals = sessionTotals(session);
   const completedAt = new Date(session.endedAt ?? session.startedAt);
-  return <div className="last-session"><h3 className="display">{session.planName}</h3><div className="last-session-meta"><time dateTime={completedAt.toISOString()}>{completedAt.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}</time><span>{formatDuration(totals.workoutMs)} total</span></div></div>;
+  return <div className="last-session"><h3 className="display">{session.planName}</h3><div className="last-session-meta"><time dateTime={completedAt.toISOString()}>{completedAt.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}</time><span>{totals.exercises} exercise{totals.exercises === 1 ? "" : "s"} · {formatDuration(totals.activeMs)} active</span></div></div>;
 }
 
 function getCurrentWeek(reference = new Date()) {
