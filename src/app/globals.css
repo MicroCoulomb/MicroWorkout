@@ -311,7 +311,6 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 .settings-card h2, .danger-zone h2 { margin: 10px 0; font-size: 2rem; }
 .settings-card > svg { margin-bottom: 12px; color: var(--orange); }
 .settings-card p, .danger-zone p { color: var(--muted); line-height: 1.6; font-size: .84rem; }
-.settings-grid .button-primary, .settings-grid .button-secondary, .settings-grid .button-danger { font-family: var(--font-body); font-size: .75rem; font-weight: 750; }
 .settings-profile-fields { display: grid; gap: 10px; margin-top: 12px; }
 .settings-profile-fields .button-primary:disabled { border-color: #39393e; background: #29292d; color: var(--muted); opacity: 1; }
 .profile-preferences { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
@@ -319,7 +318,7 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 .owner-tools-mark { position: absolute; top: 16px; right: 16px; margin: 0 !important; }
 .owner-tools > p, .exercise-library-copy { margin: 0; color: var(--muted); font-size: .84rem; line-height: 1.5; }
 .owner-tool-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
-.owner-tool-actions .button-primary, .owner-tool-actions .button-secondary { min-width: 0; padding: 0 10px; }
+.owner-tool-actions .button-primary, .owner-tool-actions .button-secondary { min-width: 0; padding: 0 6px; gap: 6px; }
 .owner-tool-placeholder { min-height: 46px; }
 .owner-tool-actions .button-secondary { background: #202024; }
 .exercise-library-dialog { width: min(100%, 700px); }
@@ -342,7 +341,7 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 .danger-zone { grid-column: 1/-1; display: grid; gap: 10px; }
 .account-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .account-actions .button-secondary { min-width: 0; padding: 0 10px; white-space: nowrap; }
-.account-signout, .account-signout:hover { border-color: rgba(232,58,39,.72); background: transparent; color: #ff8b7e; }
+.account-clear, .account-clear:hover { border-color: rgba(232,58,39,.72); background: transparent; color: #ff8b7e; }
 .signout-warning { flex: 1 0 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 1px solid color-mix(in srgb, var(--orange) 36%, #343438); border-radius: 14px; background: color-mix(in srgb, var(--orange) 7%, #1b1b1e); }
 .signout-warning p { margin: 0; color: #d7d7db; }
 .more-info { grid-column: 1/-1; overflow: hidden; }

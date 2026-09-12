@@ -95,7 +95,7 @@ describe("SettingsScreen account controls", () => {
   it("opens the complete shared library from owner tools", async () => {
     render(<SettingsScreen isAdmin onAdmin={vi.fn()} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Edit Exercise Library" }));
+    fireEvent.click(screen.getByRole("button", { name: "Edit Exercise Lib" }));
 
     expect(await screen.findByRole("dialog", { name: "Edit Exercise Library" })).toBeTruthy();
     expect(await screen.findByText("Push-Up")).toBeTruthy();
@@ -106,7 +106,7 @@ describe("SettingsScreen account controls", () => {
   it("limits the fix library queue to active custom exercises", async () => {
     render(<SettingsScreen isAdmin onAdmin={vi.fn()} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Fix Exercise Library" }));
+    fireEvent.click(screen.getByRole("button", { name: "Fix Exercise Lib" }));
 
     expect(await screen.findByRole("dialog", { name: "Fix Exercise Library" })).toBeTruthy();
     expect(await screen.findByText("Member Exercise")).toBeTruthy();
