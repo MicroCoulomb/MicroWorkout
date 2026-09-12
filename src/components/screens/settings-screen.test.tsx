@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SettingsScreen } from "./settings-screen";
 
@@ -48,7 +48,10 @@ describe("SettingsScreen account controls", () => {
   it("keeps the local database when signing out", async () => {
     render(<SettingsScreen isAdmin={false} canDeleteAccount syncEnabled onAdmin={vi.fn()} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Sign out" }));
+    fireEvent.click(screen.getByRole("button", { name: "Sign Out" }));
+    expect(screen.getByRole("alertdialog", { name: "Sign out?" })).toBeTruthy();
+    expect(mocks.syncNow).not.toHaveBeenCalled();
+    fireEvent.click(within(screen.getByRole("alertdialog")).getByRole("button", { name: "Sign Out" }));
 
     await waitFor(() => expect(mocks.signOut).toHaveBeenCalledOnce());
     expect(mocks.syncNow).toHaveBeenCalledOnce();
@@ -58,8 +61,8 @@ describe("SettingsScreen account controls", () => {
   it("clears the local database only through the explicit device action", async () => {
     render(<SettingsScreen isAdmin={false} canDeleteAccount syncEnabled onAdmin={vi.fn()} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Clear this device" }));
-    fireEvent.click(screen.getByRole("button", { name: "Clear device" }));
+    fireEvent.click(screen.getByRole("button", { name: "Clear Records" }));
+    fireEvent.click(within(screen.getByRole("alertdialog")).getByRole("button", { name: "Clear Records" }));
 
     await waitFor(() => expect(mocks.clearLocalData).toHaveBeenCalledOnce());
     expect(mocks.signOut).toHaveBeenCalledOnce();
@@ -69,11 +72,22 @@ describe("SettingsScreen account controls", () => {
     mocks.syncNow.mockResolvedValueOnce({ status: "error", pendingChanges: 1 });
     render(<SettingsScreen isAdmin={false} canDeleteAccount syncEnabled onAdmin={vi.fn()} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Sign out" }));
+    fireEvent.click(screen.getByRole("button", { name: "Sign Out" }));
+    fireEvent.click(within(screen.getByRole("alertdialog")).getByRole("button", { name: "Sign Out" }));
 
     expect((await screen.findByRole("alert")).textContent).toContain("1 local change could not sync");
     expect(mocks.signOut).not.toHaveBeenCalled();
     expect(mocks.clearLocalData).not.toHaveBeenCalled();
+  });
+
+  it("uses the compact profile labels and shared sync control", () => {
+    render(<SettingsScreen isAdmin={false} canDeleteAccount syncEnabled onAdmin={vi.fn()} />);
+
+    expect(screen.queryByText("Training defaults")).toBeNull();
+    expect(screen.getByLabelText("Weekly Goal")).toBeTruthy();
+    expect(screen.getByLabelText("Weight unit")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Synced" }));
+    expect(mocks.syncNow).toHaveBeenCalledOnce();
   });
 
   it("opens the complete shared library from owner tools", async () => {

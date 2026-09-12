@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, ClipboardCheck, Info, LibraryBig, LogOut, Pencil, Search, ShieldCheck, Trash2, Wrench, X } from "lucide-react";
+import { ChevronDown, ClipboardCheck, Info, LibraryBig, Pencil, Search, ShieldCheck, Trash2, Users, Wrench, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { MUSCLE_GROUPS, type Equipment, type MuscleGroup, type WeightUnit } from "@/domain/types";
 import { useWorkoutStore } from "@/features/workouts/workout-store";
@@ -8,6 +8,7 @@ import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { InstallAppCard } from "@/components/ui/install-app-card";
+import { SyncStatusButton } from "@/components/ui/sync-status-button";
 
 export function SettingsScreen({ isAdmin, canDeleteAccount, syncEnabled, onAdmin }: { isAdmin: boolean; canDeleteAccount: boolean; syncEnabled: boolean; onAdmin(): void }) {
   const store = useWorkoutStore();
@@ -16,7 +17,7 @@ export function SettingsScreen({ isAdmin, canDeleteAccount, syncEnabled, onAdmin
   const [goal, setGoal] = useState(store.profile?.weeklyGoal ?? 3);
   const [unit, setUnit] = useState<WeightUnit>(store.profile?.weightUnit ?? "kg");
   const [saved, setSaved] = useState(false);
-  const [pendingAction, setPendingAction] = useState<"clear" | "delete-account">();
+  const [pendingAction, setPendingAction] = useState<"clear" | "sign-out" | "delete-account">();
   const [signingOut, setSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState("");
 
@@ -43,6 +44,7 @@ export function SettingsScreen({ isAdmin, canDeleteAccount, syncEnabled, onAdmin
     if (pendingAction === "clear") {
       await store.clearLocalData(); window.localStorage.removeItem("microworkout-last-user"); await authClient.signOut(); router.refresh();
     }
+    if (pendingAction === "sign-out") await signOut();
     if (pendingAction === "delete-account") {
       const response = await fetch("/api/account", { method: "DELETE" });
       if (response.ok) { await store.clearLocalData(); window.localStorage.removeItem("microworkout-last-user"); await authClient.signOut(); router.refresh(); }
@@ -51,15 +53,15 @@ export function SettingsScreen({ isAdmin, canDeleteAccount, syncEnabled, onAdmin
   }
 
   return <>
-    <header className="page-header"><div><h1 className="page-title">Settings</h1></div></header>
+    <header className="page-header settings-page-header"><h1 className="page-title">Settings</h1><SyncStatusButton /></header>
     <div className="settings-grid">
-      <section className="settings-card card"><span className="eyebrow">Profile</span><h2 className="display">Training defaults</h2><div className="stack"><label className="field">Display name<input value={name} onChange={(event) => setName(event.target.value)} /></label><label className="field">Weekly workout goal<select value={goal} onChange={(event) => setGoal(Number(event.target.value))}>{Array.from({ length: 7 }, (_, index) => index + 1).map((value) => <option key={value} value={value}>{value} workout{value === 1 ? "" : "s"}</option>)}</select></label><label className="field">Weight unit<select value={unit} onChange={(event) => setUnit(event.target.value as WeightUnit)}><option value="kg">Kilograms</option><option value="lb">Pounds</option></select></label><button className="button-primary" onClick={() => void save()}>{saved ? "Saved" : "Save settings"}</button></div></section>
+      <section className="settings-card card"><span className="eyebrow">Profile</span><div className="settings-profile-fields"><label className="field">Display name<input value={name} onChange={(event) => setName(event.target.value)} /></label><div className="profile-preferences"><label className="field">Weekly Goal<select value={goal} onChange={(event) => setGoal(Number(event.target.value))}>{Array.from({ length: 7 }, (_, index) => index + 1).map((value) => <option key={value} value={value}>{value} workout{value === 1 ? "" : "s"}</option>)}</select></label><label className="field">Weight unit<select value={unit} onChange={(event) => setUnit(event.target.value as WeightUnit)}><option value="kg">Kilograms</option><option value="lb">Pounds</option></select></label></div><button className="button-primary" onClick={() => void save()}>{saved ? "Saved" : "Save settings"}</button></div></section>
       <InstallAppCard />
       {isAdmin && <OwnerTools onAdmin={onAdmin} />}
-      <section className="danger-zone card"><span className="eyebrow">Account controls</span><h2 className="display">Private data</h2><p>Clear cached records on this device, sign out, or permanently delete your account and owned data.</p><button className="button-secondary" onClick={() => setPendingAction("clear")}><Trash2 size={18} /> Clear this device</button>{syncEnabled && <button className="button-secondary" disabled={signingOut} onClick={() => void signOut()}><LogOut size={18} /> {signingOut ? "Syncing..." : signOutError ? "Retry sign out" : "Sign out"}</button>}{syncEnabled && canDeleteAccount && <button className="button-danger" onClick={() => setPendingAction("delete-account")}><Trash2 size={18} /> Delete account</button>}{signOutError && <div className="signout-warning" role="alert"><p>{signOutError}</p>{store.syncStatus === "locked" && <button className="text-button" onClick={() => void finishSignOut()}>Sign in again</button>}</div>}</section>
+      <section className="danger-zone card"><span className="eyebrow">Account controls</span><div className="account-actions"><button className="button-secondary" onClick={() => setPendingAction("clear")}>Clear Records</button>{syncEnabled && <button className="button-secondary" disabled={signingOut} onClick={() => setPendingAction("sign-out")}>{signingOut ? "Syncing..." : signOutError ? "Retry Sign Out" : "Sign Out"}</button>}{syncEnabled && canDeleteAccount && <button className="button-danger" onClick={() => setPendingAction("delete-account")}>Delete Account</button>}</div>{signOutError && <div className="signout-warning" role="alert"><p>{signOutError}</p>{store.syncStatus === "locked" && <button className="text-button" onClick={() => void finishSignOut()}>Sign in again</button>}</div>}</section>
       <details className="more-info card"><summary><span className="more-info-mark"><Info size={18} /></span><span className="more-info-title"><span className="eyebrow">More info</span><strong>About your data</strong></span><ChevronDown size={18} /></summary><div className="more-info-body"><section className="more-info-section"><span className="eyebrow">Offline data</span><p>Plans, sessions, and history remain available without a connection. {store.pendingChanges} local change{store.pendingChanges === 1 ? "" : "s"} waiting to sync.</p></section><section className="more-info-section"><span className="eyebrow">Private by design</span><p>Workout data is isolated to your account. Administrators manage access records only.</p></section></div></details>
     </div>
-    {pendingAction && <ConfirmDialog title={pendingAction === "clear" ? "Clear this device?" : "Delete your account?"} message={pendingAction === "clear" ? `${store.pendingChanges ? `${store.pendingChanges} unsynced local change${store.pendingChanges === 1 ? "" : "s"} will be permanently lost. ` : ""}This removes this account's cached plans and workouts from this device and signs you out. Synced data returns after your next sign-in.` : "Your account and all workout data will be permanently deleted."} confirmLabel={pendingAction === "clear" ? "Clear device" : "Delete account"} tone="danger" onClose={() => setPendingAction(undefined)} onConfirm={() => void confirmAction()} />}
+    {pendingAction && <ConfirmDialog title={pendingAction === "clear" ? "Clear records?" : pendingAction === "sign-out" ? "Sign out?" : "Delete your account?"} message={pendingAction === "clear" ? `${store.pendingChanges ? `${store.pendingChanges} unsynced local change${store.pendingChanges === 1 ? "" : "s"} will be permanently lost. ` : ""}This removes cached plans and workouts from this device and signs you out. Synced data returns after your next sign-in.` : pendingAction === "sign-out" ? "Pending changes will be synced before you sign out. If they cannot be synced, you can retry." : "Your account, workout data, and Members entry will be permanently deleted."} confirmLabel={pendingAction === "clear" ? "Clear Records" : pendingAction === "sign-out" ? "Sign Out" : "Delete Account"} tone="danger" onClose={() => setPendingAction(undefined)} onConfirm={() => void confirmAction()} />}
   </>;
 }
 
@@ -67,7 +69,7 @@ interface SharedExerciseRecord { id: string; name: string; muscleGroup: MuscleGr
 
 function OwnerTools({ onAdmin }: { onAdmin(): void }) {
   const [libraryMode, setLibraryMode] = useState<"all" | "custom">();
-  return <section className="settings-card card owner-tools"><ShieldCheck /><span className="eyebrow">Owner tools</span><h2 className="display">Library controls</h2><p>Manage access and keep the shared exercise pool clean without changing workout history.</p><div className="owner-tool-actions"><button className="button-primary" onClick={onAdmin}>Manage access</button><button className="button-secondary" onClick={() => setLibraryMode("all")}><LibraryBig size={18} /> Edit Exercise Library</button><button className="button-secondary" onClick={() => setLibraryMode("custom")}><Wrench size={18} /> Fix Exercise Library</button></div>{libraryMode && <SharedExerciseLibrary mode={libraryMode} onClose={() => setLibraryMode(undefined)} />}</section>;
+  return <section className="settings-card card owner-tools"><ShieldCheck className="owner-tools-mark" /><span className="eyebrow">Owner tools</span><div className="owner-tool-actions"><button className="button-primary" onClick={onAdmin}><Users size={18} /> Manage Access</button><button className="button-secondary" onClick={() => setLibraryMode("all")}><LibraryBig size={18} /> Edit Exercise Library</button><button className="button-secondary" onClick={() => setLibraryMode("custom")}><Wrench size={18} /> Fix Exercise Library</button></div>{libraryMode && <SharedExerciseLibrary mode={libraryMode} onClose={() => setLibraryMode(undefined)} />}</section>;
 }
 
 function SharedExerciseLibrary({ mode, onClose }: { mode: "all" | "custom"; onClose(): void }) {

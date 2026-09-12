@@ -1,27 +1,27 @@
 "use client";
 
 import Image from "next/image";
-import { ArrowRight, Cloud, CloudOff, Flame, RotateCcw, TimerReset, Users } from "lucide-react";
+import { ArrowRight, Flame, RotateCcw, TimerReset, Users } from "lucide-react";
 import { formatDuration, sessionTotals } from "@/domain/metrics";
 import type { AppView } from "../micro-workout-app";
 import { useWorkoutStore } from "@/features/workouts/workout-store";
+import { SyncStatusButton } from "@/components/ui/sync-status-button";
 
 export function Dashboard({ onNavigate, onResume }: { onNavigate(view: AppView): void; onResume(): void }) {
-  const { sessions, profile, pendingChanges, currentDeviceId, syncStatus, syncNow } = useWorkoutStore();
+  const { sessions, profile, currentDeviceId } = useWorkoutStore();
   const completed = sessions.filter((session) => session.status === "completed" || session.status === "completed_early");
   const active = sessions.find((session) => (session.status === "active" || session.status === "paused") && session.deviceId === currentDeviceId);
   const week = getCurrentWeek();
   const thisWeekSessions = completed.filter((session) => session.endedAt && session.endedAt >= week[0].start && session.endedAt < week[6].end);
   const weeklyGoal = profile?.weeklyGoal ?? 3;
   const lastSession = completed[0];
-  const SyncIcon = syncStatus === "synced" ? Cloud : CloudOff;
   const currentMonth = new Date().toLocaleDateString(undefined, { month: "long" });
 
   return (
     <>
       <header className="topline">
         <div className="brand display"><span>Micro</span>Workout<Image className="brand-mark" src="/icon-orange.png" alt="" width={1536} height={1024} sizes="28px" /></div>
-        <button className="sync-pill" onClick={() => void syncNow()}><SyncIcon size={14} /> {syncStatus === "local" ? "Local demo" : syncStatus === "synced" ? "Synced" : syncStatus === "syncing" ? "Syncing" : syncStatus === "offline" ? `${pendingChanges} pending` : syncStatus === "locked" ? "Sign in again" : "Retry sync"}</button>
+        <SyncStatusButton />
       </header>
       <div className="page-header dashboard-header"><h1 className="page-title">Dashboard</h1></div>
 
