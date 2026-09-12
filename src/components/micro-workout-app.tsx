@@ -1,7 +1,7 @@
 "use client";
 
 import { CalendarDays, Dumbbell, Home, Settings } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Dashboard } from "./screens/dashboard";
 import { HistoryScreen } from "./screens/history-screen";
 import { PlansScreen } from "./screens/plans-screen";
@@ -30,15 +30,52 @@ function AppContent({ isAdmin, canDeleteAccount, syncEnabled }: { isAdmin: boole
   const [workoutId, setWorkoutId] = useState<string>();
   const [pendingPlan, setPendingPlan] = useState<WorkoutPlan>();
   const { ready, sessions, currentDeviceId, startWorkout } = useWorkoutStore();
+  const appFrameRef = useRef<HTMLElement | null>(null);
   const activeSession = typeof window === "undefined" ? undefined : sessions.find(
     (session) => (session.status === "active" || session.status === "paused") && session.deviceId === currentDeviceId,
   );
+  const selectedSession = workoutId ? sessions.find((session) => session.id === workoutId) : undefined;
+  const appShellVisible = ready && !selectedSession && !pendingPlan;
+
+  useEffect(() => {
+    if (!appShellVisible) return;
+    document.body.classList.add("app-active");
+    return () => document.body.classList.remove("app-active");
+  }, [appShellVisible]);
+
+  useEffect(() => {
+    if (!appShellVisible) return;
+    const frame = appFrameRef.current;
+    if (!frame) return;
+    let touchY: number | undefined;
+    const start = (event: TouchEvent) => { touchY = event.touches.length === 1 ? event.touches[0].clientY : undefined; };
+    const move = (event: TouchEvent) => {
+      if (touchY === undefined || event.touches.length !== 1) return;
+      if (event.target instanceof Element && event.target.closest(".dialog, [data-scroll-lock-exempt]")) return;
+      const nextY = event.touches[0].clientY;
+      const deltaY = nextY - touchY;
+      const atTop = frame.scrollTop <= 0;
+      const atBottom = frame.scrollTop + frame.clientHeight >= frame.scrollHeight - 1;
+      if ((deltaY > 0 && atTop) || (deltaY < 0 && atBottom)) event.preventDefault();
+      touchY = nextY;
+    };
+    const end = () => { touchY = undefined; };
+    frame.addEventListener("touchstart", start, { passive: true });
+    frame.addEventListener("touchmove", move, { passive: false });
+    frame.addEventListener("touchend", end, { passive: true });
+    frame.addEventListener("touchcancel", end, { passive: true });
+    return () => {
+      frame.removeEventListener("touchstart", start);
+      frame.removeEventListener("touchmove", move);
+      frame.removeEventListener("touchend", end);
+      frame.removeEventListener("touchcancel", end);
+    };
+  }, [appShellVisible]);
 
   if (!ready) {
     return <main className="app-frame"><div className="loading-mark display">MW</div></main>;
   }
 
-  const selectedSession = workoutId ? sessions.find((session) => session.id === workoutId) : undefined;
   if (selectedSession) {
     return <WorkoutScreen session={selectedSession} onClose={() => { setWorkoutId(undefined); setView("home"); }} />;
   }
@@ -54,7 +91,7 @@ function AppContent({ isAdmin, canDeleteAccount, syncEnabled }: { isAdmin: boole
   const showLauncher = view === "home" || view === "plans" || view === "history";
 
   return (
-    <main className={`app-frame${view === "history" ? " app-frame-history" : ""}`}>
+    <main ref={appFrameRef} className={`app-frame${view === "history" ? " app-frame-history" : ""}`}>
       {view === "home" && <Dashboard onNavigate={setView} onResume={() => activeSession && setWorkoutId(activeSession.id)} />}
       {view === "plans" && <PlansScreen />}
       {view === "history" && <HistoryScreen />}

@@ -28,6 +28,7 @@ body {
   color: var(--paper);
   font-family: var(--font-body), sans-serif;
 }
+body.app-active { height: 100%; overflow: hidden; }
 button, input, select { font: inherit; }
 button { color: inherit; -webkit-tap-highlight-color: transparent; }
 button svg { display: block; flex: 0 0 auto; }
@@ -388,6 +389,7 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 
 @media (max-width: 760px) {
   .app-frame { padding: max(18px, calc(env(safe-area-inset-top) + 12px)) 14px 108px; }
+  .bottom-nav { bottom: 0; padding: 6px 6px calc(6px + env(safe-area-inset-bottom)); border-bottom: 0; border-radius: 24px 24px 0 0; }
   .field input, .field select { height: 50px; font-size: 16px; }
   .grid-main { grid-template-columns: 1fr; }
   .page-header { margin-top: 8px; }
