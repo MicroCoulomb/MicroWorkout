@@ -28,7 +28,6 @@ body {
   color: var(--paper);
   font-family: var(--font-body), sans-serif;
 }
-body.app-active { height: 100%; overflow: hidden; }
 button, input, select { font: inherit; }
 button { color: inherit; -webkit-tap-highlight-color: transparent; }
 button svg { display: block; flex: 0 0 auto; }
@@ -41,7 +40,7 @@ button:disabled { cursor: not-allowed; opacity: .45; }
   button, [role="button"] { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
 }
 
-.app-frame { width: min(100%, 1160px); height: 100dvh; min-height: 0; margin: 0 auto; overflow-y: auto; overscroll-behavior-y: contain; padding: max(24px, calc(env(safe-area-inset-top) + 12px)) 20px 116px; }
+.app-frame { width: min(100%, 1160px); height: 100dvh; min-height: 0; margin: 0 auto; overflow-y: auto; overscroll-behavior-y: none; padding: max(24px, calc(env(safe-area-inset-top) + 12px)) 20px 116px; }
 .app-frame-history { height: 100dvh; min-height: 0; overflow: hidden; }
 .display { font-family: var(--font-display), sans-serif; text-transform: uppercase; letter-spacing: -.025em; }
 .eyebrow { color: var(--orange-bright); font: 700 .72rem/1 var(--font-body); letter-spacing: .16em; text-transform: uppercase; }
@@ -284,7 +283,7 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 .calendar-day[data-workout="true"] > span { width: 25px; height: 25px; display: grid; place-items: center; border-radius: 50%; background: var(--orange); color: #180b04; }
 .calendar-day[data-today="true"]::after { position: absolute; z-index: 2; width: 25px; height: 25px; border: 1px solid var(--paper); border-radius: 50%; content: ""; pointer-events: none; }
 .calendar-day[data-selected="true"] { border-color: var(--orange-bright); background: transparent; }
-.history-records { min-height: 0; flex: 1 1 auto; overflow-y: auto; overscroll-behavior: contain; padding: 1px 0 12px; scrollbar-width: none; }
+.history-records { min-height: 0; flex: 1 1 auto; overflow-y: auto; overscroll-behavior-y: none; padding: 1px 0 12px; scrollbar-width: none; }
 .history-records::-webkit-scrollbar { width: 0; height: 0; }
 .history-list { display: grid; gap: 9px; }
 .history-swipe-row { position: relative; overflow: hidden; border-radius: 22px; }
@@ -389,7 +388,7 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 
 @media (max-width: 760px) {
   .app-frame { padding: max(18px, calc(env(safe-area-inset-top) + 12px)) 14px 108px; }
-  .bottom-nav { bottom: 0; padding: 6px 6px calc(6px + env(safe-area-inset-bottom)); border-bottom: 0; border-radius: 24px 24px 0 0; }
+  .bottom-nav { bottom: 16px; }
   .field input, .field select { height: 50px; font-size: 16px; }
   .grid-main { grid-template-columns: 1fr; }
   .page-header { margin-top: 8px; }
@@ -403,8 +402,8 @@ button:disabled { cursor: not-allowed; opacity: .45; }
   .community-icon { width: 31px; height: 31px; margin-bottom: 17px; border-radius: 10px; }
   .community-card h2 { font-size: 1.45rem; }
   .community-card p { font-size: .7rem; }
-  .workout-launcher { right: max(18px, calc(env(safe-area-inset-right) + 12px)); bottom: max(116px, calc(env(safe-area-inset-bottom) + 98px)); width: 60px; height: 60px; }
-  .plan-create-launcher { right: max(18px, calc(env(safe-area-inset-right) + 12px)); bottom: max(188px, calc(env(safe-area-inset-bottom) + 170px)); width: 60px; height: 60px; }
+  .workout-launcher { right: max(18px, calc(env(safe-area-inset-right) + 12px)); bottom: 114px; width: 60px; height: 60px; }
+  .plan-create-launcher { right: max(18px, calc(env(safe-area-inset-right) + 12px)); bottom: 186px; width: 60px; height: 60px; }
   .start-card { min-height: 220px; padding: 22px; }
   .start-card h2 { font-size: 3.4rem; }
   .start-arrow { width: 78px; height: 78px; }
