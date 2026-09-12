@@ -20,7 +20,9 @@ export function MicroWorkoutApp({ userId = "demo", userName = "Athlete", syncEna
   }, [syncEnabled, userId, userName]);
   return (
     <WorkoutStoreProvider userId={userId} userName={userName} syncEnabled={syncEnabled} initialProfile={initialProfile}>
-      <AppContent isAdmin={isAdmin} />
+      <div className="app-viewport">
+        <AppContent isAdmin={isAdmin} />
+      </div>
     </WorkoutStoreProvider>
   );
 }
@@ -53,22 +55,22 @@ function AppContent({ isAdmin }: { isAdmin: boolean }) {
 
   const showLauncher = view === "home" || view === "plans" || view === "history";
 
-  return (
+  return <>
     <main className={`app-frame${view === "history" ? " app-frame-history" : view === "admin" ? " app-frame-admin" : ""}`}>
       {view === "home" && <Dashboard onNavigate={setView} onResume={() => activeSession && setWorkoutId(activeSession.id)} />}
       {view === "plans" && <PlansScreen />}
       {view === "history" && <HistoryScreen />}
       {view === "settings" && <SettingsScreen isAdmin={isAdmin} onAdmin={() => setView("admin")} />}
       {view === "admin" && <AdminScreen onBack={() => setView("settings")} />}
-      {showLauncher && <WorkoutLauncher active={Boolean(activeSession)} onResume={() => activeSession && setWorkoutId(activeSession.id)} onSelect={setPendingPlan} />}
-      <nav className="bottom-nav" aria-label="Primary navigation">
-        <NavButton label="Home" active={view === "home"} onClick={() => setView("home")}><Home size={20} /></NavButton>
-        <NavButton label="Plans" active={view === "plans"} onClick={() => setView("plans")}><Dumbbell size={20} /></NavButton>
-        <NavButton label="History" active={view === "history"} onClick={() => setView("history")}><CalendarDays size={20} /></NavButton>
-        <NavButton label="Settings" active={view === "settings"} onClick={() => setView("settings")}><Settings size={20} /></NavButton>
-      </nav>
     </main>
-  );
+    {showLauncher && <WorkoutLauncher active={Boolean(activeSession)} onResume={() => activeSession && setWorkoutId(activeSession.id)} onSelect={setPendingPlan} />}
+    <nav className="bottom-nav" aria-label="Primary navigation">
+      <NavButton label="Home" active={view === "home"} onClick={() => setView("home")}><Home size={20} /></NavButton>
+      <NavButton label="Plans" active={view === "plans"} onClick={() => setView("plans")}><Dumbbell size={20} /></NavButton>
+      <NavButton label="History" active={view === "history"} onClick={() => setView("history")}><CalendarDays size={20} /></NavButton>
+      <NavButton label="Settings" active={view === "settings"} onClick={() => setView("settings")}><Settings size={20} /></NavButton>
+    </nav>
+  </>;
 }
 
 function NavButton({ label, active, onClick, children }: { label: string; active: boolean; onClick(): void; children: React.ReactNode }) {
